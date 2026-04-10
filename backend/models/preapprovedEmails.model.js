@@ -1,26 +1,33 @@
-import pool from "../config/postgredb.js";
+import pool from "../config/db.js";
 
 const PreapprovedEmail = {
   async getAll() {
     const query = `SELECT * FROM preapproved_emails ORDER BY created_at DESC;`;
-    const result = await pool.query(query);
-    return result.rows;
+    const [rows] = await pool.query(query);
+    return rows;
   },
 
   async bulkInsert(emails) {
+    if(!emails || emails.length === 0) return [];
+    
+    // MariaDB bulk insert: INSERT IGNORE INTO ... VALUES ?
     const query = `
-      INSERT INTO preapproved_emails (email)
-      SELECT UNNEST($1::text[])
-      ON CONFLICT (email) DO NOTHING
-      RETURNING *;
+      INSERT IGNORE INTO preapproved_emails (email)
+      VALUES ?
     `;
-    const result = await pool.query(query, [emails]);
-    return result.rows;
+    const values = emails.map(email => [email]);
+    await pool.query(query, [values]);
+    
+    const placeholders = emails.map(() => '?').join(',');
+    const [rows] = await pool.query(`SELECT * FROM preapproved_emails WHERE email IN (${placeholders})`, [...emails]);
+    return rows;
   },
 
   async bulkDelete(emails) {
-    const query = `DELETE FROM preapproved_emails WHERE email = ANY($1::text[]);`;
-    await pool.query(query, [emails]);
+    if(!emails || emails.length === 0) return;
+    const placeholders = emails.map(() => '?').join(',');
+    const query = `DELETE FROM preapproved_emails WHERE email IN (${placeholders});`;
+    await pool.query(query, [...emails]);
   }
 };
 

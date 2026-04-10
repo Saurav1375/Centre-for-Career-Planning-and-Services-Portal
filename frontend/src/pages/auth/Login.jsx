@@ -16,7 +16,6 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { loading, login } = useLogin();
-  const { setShowForgotPassword } = useAppContext();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -73,13 +72,6 @@ const Login = () => {
             </div>
           </div>
           <div className="flex justify-between items-center text-xs mb-2">
-            <button
-              type="button"
-              className="text-emerald-500 hover:underline"
-              onClick={() => setShowForgotPassword(true)}
-            >
-              Forgot Password?
-            </button>
             <span className="flex items-center gap-1 text-gray-400 ml-auto">
               <svg width="14" height="14" fill="none"><circle cx="7" cy="7" r="6" stroke="#10b981" strokeWidth="2"/><path d="M5.5 7.5L7 9l2-3" stroke="#10b981" strokeWidth="2" /></svg>
               Secure login

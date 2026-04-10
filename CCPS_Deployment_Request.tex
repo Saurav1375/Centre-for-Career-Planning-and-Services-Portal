@@ -1,0 +1,686 @@
+\documentclass[12pt,a4paper]{article}
+
+% ===== Packages =====
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% ===== Styling =====
+\hypersetup{colorlinks=true, linkcolor=blue!70!black, urlcolor=blue!70!black}
+\definecolor{sqlblue}{RGB}{0,80,160}
+\definecolor{sqlgray}{RGB}{245,245,248}
+
+\lstdefinestyle{sqlstyle}{
+    backgroundcolor=\color{sqlgray},
+    basicstyle=\footnotesize\ttfamily,
+    keywordstyle=\color{sqlblue}\bfseries,
+    commentstyle=\color{gray},
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{gray!40},
+    language=SQL,
+    morekeywords={CHAR,VARCHAR,BOOLEAN,TIMESTAMP,TEXT,LONGBLOB,UUID,FLOAT,IF,EXISTS,DEFAULT,ON,UPDATE,CASCADE,SET,NULL,CURRENT_TIMESTAMP}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{CCPS Portal --- Deployment Request}}
+\fancyhead[R]{\small\textit{IIT Bhilai}}
+\fancyfoot[C]{\thepage}
+
+\titleformat{\section}{\Large\bfseries\color{blue!70!black}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\large\bfseries}{}{0em}{}
+
+% ===== Document =====
+\begin{document}
+
+% ---------- Title Page ----------
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    {\Huge\bfseries Centre for Career Planning\\[4pt] and Services Portal}\\[1.2cm]
+    {\LARGE\textit{Server Deployment Request}}\\[0.3cm]
+    {\large Submitted to the ITIS Team, IIT Bhilai}\\[2.5cm]
+    
+    \begin{tabular}{rl}
+        \textbf{Submitted By:}  & Centre for Career Planning and Services (CCPS) \\
+        \textbf{Institute:}     & Indian Institute of Technology Bhilai \\
+        \textbf{Date:}          & \today \\
+        \textbf{Document Version:} & 1.0 \\
+    \end{tabular}
+    
+    \vfill
+    {\small\textit{This document is intended for the ITIS infrastructure team and contains all technical specifications required for server provisioning and deployment.}}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ==========================================
+\section{Executive Summary}
+% ==========================================
+
+The \textbf{Centre for Career Planning and Services (CCPS) Portal} is a web-based application developed to \textbf{streamline the operations of the Liaising Team} at IIT Bhilai. The Liaising Team is responsible for establishing and maintaining relationships with corporate HR contacts for campus placements. This portal digitises and automates their entire workflow, including:
+
+\begin{itemize}[nosep]
+    \item Central repository of HR contacts across companies.
+    \item Assignment of HR contacts to student callers in bulk.
+    \item Structured call logging with follow-up scheduling.
+    \item Automated daily follow-up reminders via an in-app notification system.
+    \item Administrative dashboards with real-time analytics.
+    \item Role-based access control (Admin, Caller, Student, Recruiter).
+    \item Discussion forum for internal team communication.
+    \item Job posting, application tracking, alumni networking, and referral management.
+\end{itemize}
+
+The application uses a \textbf{MariaDB} relational database as its sole data store, with a \textbf{Node.js/Express} backend API and a \textbf{React (Vite)} frontend.
+
+% ==========================================
+\section{Server Requirements}
+% ==========================================
+
+The following table summarises the minimum infrastructure required from the ITIS team for hosting this application.
+
+\subsection{Software Requirements}
+
+\begin{longtable}{p{4cm} p{3cm} p{7cm}}
+    \toprule
+    \textbf{Component} & \textbf{Version} & \textbf{Purpose} \\
+    \midrule
+    \endhead
+    
+    Node.js            & $\geq$ 18.x LTS  & JavaScript runtime for backend API server \\
+    npm                & $\geq$ 9.x        & Package manager (ships with Node.js) \\
+    MariaDB Server     & $\geq$ 10.11      & Relational database engine (sole data store) \\
+    Nginx (or Apache)  & Latest stable     & Reverse proxy \& static file server \\
+    Git                & Latest stable     & Source code deployment \\
+    PM2 (optional)     & Latest            & Node.js process manager for production \\
+    
+    \bottomrule
+\end{longtable}
+
+\subsection{Hardware Requirements (Minimum)}
+
+\begin{longtable}{p{4cm} p{10cm}}
+    \toprule
+    \textbf{Resource} & \textbf{Specification} \\
+    \midrule
+    \endhead
+    
+    CPU         & 2 vCPUs \\
+    RAM         & 4 GB minimum (8 GB recommended) \\
+    Disk Space  & 20 GB SSD (expandable; database stores binary file attachments) \\
+    Network     & Public-facing IP or subdomain under \texttt{iitbhilai.ac.in} \\
+    
+    \bottomrule
+\end{longtable}
+
+\subsection{Network / Firewall Requirements}
+
+\begin{longtable}{p{3cm} p{3cm} p{8cm}}
+    \toprule
+    \textbf{Port} & \textbf{Protocol} & \textbf{Purpose} \\
+    \midrule
+    \endhead
+    
+    80 / 443    & TCP (HTTP/HTTPS) & Frontend serving \& API access (via Nginx reverse proxy) \\
+    5000        & TCP (internal)   & Node.js backend API (proxied behind Nginx; not publicly exposed) \\
+    3306        & TCP (internal)   & MariaDB database (localhost only; not publicly exposed) \\
+    
+    \bottomrule
+\end{longtable}
+
+\subsection{Additional Requests from ITIS}
+
+\begin{enumerate}[nosep]
+    \item \textbf{MariaDB Database:} Please provision a MariaDB 10.11+ instance with:
+    \begin{itemize}[nosep]
+        \item Database name: \texttt{ccps}
+        \item A dedicated database user with full privileges on the \texttt{ccps} database.
+        \item \texttt{max\_allowed\_packet} set to at least \texttt{64M} (the application stores binary file attachments as \texttt{LONGBLOB}).
+    \end{itemize}
+    
+    \item \textbf{Subdomain:} A subdomain such as \texttt{ccps.iitbhilai.ac.in} with an SSL certificate (Let's Encrypt or institute CA).
+    
+    \item \textbf{Nginx Configuration:} Reverse proxy configuration to forward \texttt{/api/*} requests to \texttt{localhost:5000} and serve static React build files for all other routes.
+    
+    \item \textbf{Process Management:} PM2 or systemd unit file to ensure the Node.js backend auto-restarts on crash and server reboot.
+    
+    \item \textbf{Cron Permissions:} The application uses \texttt{node-cron} (in-process scheduler); no system-level crontab access is needed.
+\end{enumerate}
+
+% ==========================================
+\section{Application Architecture}
+% ==========================================
+
+\subsection{Technology Stack}
+
+\begin{longtable}{p{4cm} p{10cm}}
+    \toprule
+    \textbf{Layer} & \textbf{Technology} \\
+    \midrule
+    \endhead
+    
+    Frontend        & React 18.3, Vite 5.4, React Router v6, TailwindCSS 3.4, MUI v6, Recharts, Chart.js \\
+    Backend         & Node.js, Express 4.21, \texttt{mysql2} driver \\
+    Database        & MariaDB 10.11 (single relational database; no external services) \\
+    Authentication  & JWT (JSON Web Tokens) with bcrypt password hashing \\
+    Scheduling      & \texttt{node-cron} (daily 8:00 AM follow-up reminder generation) \\
+    File Storage    & MariaDB \texttt{LONGBLOB} columns (no external cloud storage dependencies) \\
+    
+    \bottomrule
+\end{longtable}
+
+\subsection{Key Backend Dependencies}
+
+\begin{longtable}{p{4cm} p{2.5cm} p{7.5cm}}
+    \toprule
+    \textbf{Package} & \textbf{Version} & \textbf{Purpose} \\
+    \midrule
+    \endhead
+    
+    express          & 4.21.x   & HTTP server framework \\
+    mysql2           & 3.20.x   & MariaDB/MySQL client driver \\
+    bcryptjs         & 3.0.x    & Password hashing \\
+    jsonwebtoken     & 9.0.x    & JWT authentication \\
+    node-cron        & 4.2.x    & In-process task scheduler \\
+    cookie-parser    & 1.4.x    & Cookie handling middleware \\
+    cors             & 2.8.x    & Cross-origin resource sharing \\
+    dotenv           & 16.6.x   & Environment variable management \\
+    pdfkit           & 0.16.x   & PDF report generation \\
+    
+    \bottomrule
+\end{longtable}
+
+\subsection{Key Frontend Dependencies}
+
+\begin{longtable}{p{5cm} p{2.5cm} p{6.5cm}}
+    \toprule
+    \textbf{Package} & \textbf{Version} & \textbf{Purpose} \\
+    \midrule
+    \endhead
+    
+    react / react-dom        & 18.3.x   & Core UI library \\
+    react-router-dom         & 6.30.x   & Client-side routing \\
+    axios                    & 1.10.x   & HTTP client for API calls \\
+    @mui/material            & 6.4.x    & Material UI component library \\
+    tailwindcss              & 3.4.x    & Utility-first CSS framework \\
+    recharts / chart.js      & Latest   & Data visualisation charts \\
+    lucide-react             & 0.477.x  & Icon library \\
+    date-fns                 & 4.1.x    & Date utilities \\
+    
+    \bottomrule
+\end{longtable}
+
+\subsection{User Roles}
+
+\begin{longtable}{p{3cm} p{11cm}}
+    \toprule
+    \textbf{Role} & \textbf{Permissions} \\
+    \midrule
+    \endhead
+    
+    Admin     & Full platform control: approve/deny users, manage HR contacts, assign callers, view analytics, manage companies, send messages, export data. \\
+    Caller    & View assigned HR contacts, log calls, schedule follow-ups, view personal dashboard and statistics. \\
+    Student   & Browse job postings, submit applications, manage profile, participate in discussion forum. \\
+    Recruiter & Post job openings, view applicant pipelines. \\
+    
+    \bottomrule
+\end{longtable}
+
+% ==========================================
+\section{Deployment Procedure}
+% ==========================================
+
+\begin{enumerate}
+    \item \textbf{Clone the repository:}
+    \begin{lstlisting}[style=sqlstyle, language=bash]
+git clone <repository-url> /opt/ccps-portal
+cd /opt/ccps-portal
+    \end{lstlisting}
+    
+    \item \textbf{Install backend dependencies:}
+    \begin{lstlisting}[style=sqlstyle, language=bash]
+cd backend
+npm install --production
+    \end{lstlisting}
+    
+    \item \textbf{Configure environment variables:} Create \texttt{backend/.env} with:
+    \begin{lstlisting}[style=sqlstyle, language=bash]
+PORT=5000
+JWT_SECRET=<generate-a-secure-random-string>
+DB_USER=<mariadb-username>
+DB_PASSWORD=<mariadb-password>
+DB_HOST=127.0.0.1
+DB_NAME=ccps
+DB_PORT=3306
+FRONTEND_URL=https://ccps.iitbhilai.ac.in
+    \end{lstlisting}
+    
+    \item \textbf{Initialise the database:}
+    \begin{lstlisting}[style=sqlstyle, language=bash]
+mariadb -u <user> -p ccps < backend/schema.sql
+    \end{lstlisting}
+    
+    \item \textbf{Build the frontend:}
+    \begin{lstlisting}[style=sqlstyle, language=bash]
+cd ../frontend
+npm install
+npm run build
+    \end{lstlisting}
+    
+    \item \textbf{Start the backend (production):}
+    \begin{lstlisting}[style=sqlstyle, language=bash]
+cd ../backend
+pm2 start server.js --name ccps-backend
+    \end{lstlisting}
+    
+    \item \textbf{Configure Nginx} to serve the frontend build and proxy API requests to port 5000.
+\end{enumerate}
+
+% ==========================================
+\section{Complete Database Schema}
+% ==========================================
+
+The application uses a single MariaDB database named \texttt{ccps} with the following \textbf{20 tables}. All primary keys use UUID v4 strings (\texttt{CHAR(36)}) generated by MariaDB's built-in \texttt{UUID()} function.
+
+\subsection{Entity--Relationship Overview}
+
+\begin{center}
+\small
+\begin{tabular}{llp{7cm}}
+    \toprule
+    \textbf{Table} & \textbf{Primary Key} & \textbf{Description} \\
+    \midrule
+    \texttt{users}                & \texttt{user\_id}        & All platform users (Admin, Caller, Student, Recruiter) \\
+    \texttt{companies}            & \texttt{company\_id}     & Recruiting companies \\
+    \texttt{hr\_contacts}         & \texttt{contact\_id}     & HR personnel linked to companies \\
+    \texttt{call\_logs}           & \texttt{log\_id}         & Call interaction records between callers and HR contacts \\
+    \texttt{attachments}          & \texttt{attachment\_id}  & File attachments for call logs \\
+    \texttt{preapproved\_emails}  & \texttt{email}           & Pre-approved email whitelist \\
+    \texttt{notifications}        & \texttt{notification\_id}& In-app notification messages \\
+    \texttt{files}                & \texttt{file\_id}        & Binary file storage (LONGBLOB) \\
+    \texttt{threads}              & \texttt{thread\_id}      & Discussion forum threads \\
+    \texttt{comments}             & \texttt{comment\_id}     & Comments on threads \\
+    \texttt{thread\_upvotes}      & composite               & Thread upvote records \\
+    \texttt{thread\_downvotes}    & composite               & Thread downvote records \\
+    \texttt{job\_postings}        & \texttt{job\_id}         & Job/internship listings \\
+    \texttt{saved\_jobs}          & composite               & Bookmarked jobs per user \\
+    \texttt{job\_applications}    & \texttt{application\_id} & Student job applications \\
+    \texttt{students}             & \texttt{student\_id}     & Extended student profile data \\
+    \texttt{student\_offcampus\_jobs} & \texttt{record\_id}  & Off-campus application tracking \\
+    \texttt{alumni}               & \texttt{alumni\_id}      & Alumni directory \\
+    \texttt{alumni\_jobs}         & \texttt{record\_id}      & Jobs associated with alumni \\
+    \texttt{referrals}            & \texttt{referral\_id}    & Alumni referral records \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Full SQL Schema Definition}
+
+The following is the complete, production-ready SQL schema that must be executed on the provisioned MariaDB instance to initialise the database.
+
+\begin{lstlisting}[style=sqlstyle]
+-- ==============================
+-- USERS TABLE
+-- ==============================
+CREATE TABLE users (
+    user_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    full_name VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    password_hash VARCHAR(255),
+    role VARCHAR(20),
+    is_approved BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    verification_token TEXT,
+    verification_token_expires_at TIMESTAMP NULL,
+    is_verified BOOLEAN DEFAULT FALSE,
+    reset_password_token TEXT,
+    reset_password_token_expires_at TIMESTAMP NULL,
+    last_active_at TIMESTAMP NULL
+);
+
+-- ==============================
+-- COMPANIES TABLE
+-- ==============================
+CREATE TABLE companies (
+    company_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    company_name VARCHAR(150),
+    website VARCHAR(255),
+    industry_sector VARCHAR(100),
+    address TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ==============================
+-- HR CONTACTS TABLE
+-- ==============================
+CREATE TABLE hr_contacts (
+    contact_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    full_name VARCHAR(100),
+    company_id CHAR(36),
+    designation VARCHAR(100),
+    email VARCHAR(100),
+    phone_1 VARCHAR(20),
+    phone_2 VARCHAR(20),
+    linkedin_profile VARCHAR(255),
+    source VARCHAR(100),
+    status VARCHAR(20),
+    notes TEXT,
+    tags TEXT,
+    past_engagement TEXT,
+    added_by_user_id CHAR(36),
+    is_approved BOOLEAN DEFAULT FALSE,
+    assigned_to_user_id CHAR(36),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id)
+        REFERENCES companies(company_id) ON DELETE CASCADE,
+    FOREIGN KEY (added_by_user_id)
+        REFERENCES users(user_id),
+    FOREIGN KEY (assigned_to_user_id)
+        REFERENCES users(user_id)
+);
+
+-- ==============================
+-- CALL LOGS TABLE
+-- ==============================
+CREATE TABLE call_logs (
+    log_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    contact_id CHAR(36),
+    caller_id CHAR(36),
+    call_mode VARCHAR(50),
+    call_outcome VARCHAR(50),
+    duration INTEGER,
+    conversation_summary TEXT,
+    next_follow_up_date DATE,
+    call_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    remarks TEXT,
+    admin_comments TEXT,
+    recruitment_cycle VARCHAR(20),
+    FOREIGN KEY (contact_id)
+        REFERENCES hr_contacts(contact_id) ON DELETE CASCADE,
+    FOREIGN KEY (caller_id)
+        REFERENCES users(user_id)
+);
+
+-- ==============================
+-- ATTACHMENTS TABLE
+-- ==============================
+CREATE TABLE attachments (
+    attachment_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    log_id CHAR(36),
+    file_url VARCHAR(255),
+    file_name VARCHAR(150),
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (log_id)
+        REFERENCES call_logs(log_id) ON DELETE CASCADE
+);
+
+-- ==============================
+-- PREAPPROVED EMAILS
+-- ==============================
+CREATE TABLE preapproved_emails (
+    email VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ==============================
+-- NOTIFICATIONS TABLE
+-- ==============================
+CREATE TABLE notifications (
+    notification_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    user_id CHAR(36),
+    title VARCHAR(255),
+    message TEXT,
+    type VARCHAR(50),
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- ==============================
+-- FILES TABLE (BINARY STORAGE)
+-- ==============================
+CREATE TABLE files (
+    file_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    mime_type VARCHAR(100),
+    file_data LONGBLOB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ==============================
+-- THREADS TABLE
+-- ==============================
+CREATE TABLE threads (
+    thread_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    author_id CHAR(36),
+    title VARCHAR(255) NOT NULL,
+    text TEXT,
+    file_id CHAR(36),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (author_id)
+        REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (file_id)
+        REFERENCES files(file_id) ON DELETE SET NULL
+);
+
+-- ==============================
+-- COMMENTS TABLE
+-- ==============================
+CREATE TABLE comments (
+    comment_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    thread_id CHAR(36),
+    author_id CHAR(36),
+    text TEXT,
+    file_id CHAR(36),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (thread_id)
+        REFERENCES threads(thread_id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id)
+        REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (file_id)
+        REFERENCES files(file_id) ON DELETE SET NULL
+);
+
+-- ==============================
+-- THREAD VOTES
+-- ==============================
+CREATE TABLE thread_upvotes (
+    thread_id CHAR(36),
+    user_id CHAR(36),
+    PRIMARY KEY (thread_id, user_id),
+    FOREIGN KEY (thread_id)
+        REFERENCES threads(thread_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE thread_downvotes (
+    thread_id CHAR(36),
+    user_id CHAR(36),
+    PRIMARY KEY (thread_id, user_id),
+    FOREIGN KEY (thread_id)
+        REFERENCES threads(thread_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- ==============================
+-- JOB POSTINGS
+-- ==============================
+CREATE TABLE job_postings (
+    job_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    job_title VARCHAR(255) NOT NULL,
+    job_description TEXT NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    required_skills TEXT,
+    job_type VARCHAR(50) NOT NULL,
+    batch INTEGER NOT NULL,
+    deadline DATETIME,
+    application_link VARCHAR(255),
+    expiry DATETIME,
+    author VARCHAR(255),
+    relevance_score FLOAT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- ==============================
+-- SAVED JOBS
+-- ==============================
+CREATE TABLE saved_jobs (
+    user_id CHAR(36),
+    job_id CHAR(36),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, job_id),
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (job_id)
+        REFERENCES job_postings(job_id) ON DELETE CASCADE
+);
+
+-- ==============================
+-- JOB APPLICATIONS
+-- ==============================
+CREATE TABLE job_applications (
+    application_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    student_id CHAR(36),
+    job_id CHAR(36),
+    resume_url VARCHAR(255),
+    phone VARCHAR(50),
+    address TEXT,
+    status VARCHAR(50) DEFAULT 'applied',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id)
+        REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (job_id)
+        REFERENCES job_postings(job_id) ON DELETE CASCADE
+);
+
+-- ==============================
+-- STUDENTS PROFILE
+-- ==============================
+CREATE TABLE students (
+    student_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    user_id CHAR(36) UNIQUE,
+    discipline VARCHAR(255) NOT NULL,
+    program VARCHAR(255) DEFAULT '',
+    cgpa FLOAT,
+    status VARCHAR(50) NOT NULL,
+    student_roll_no VARCHAR(100) UNIQUE NOT NULL,
+    batch INTEGER NOT NULL,
+    resume_link VARCHAR(255),
+    profile_photo_url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- ==============================
+-- STUDENT OFF-CAMPUS JOBS
+-- ==============================
+CREATE TABLE student_offcampus_jobs (
+    record_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    student_id CHAR(36),
+    job_id CHAR(36),
+    application_status VARCHAR(50),
+    FOREIGN KEY (student_id)
+        REFERENCES students(student_id) ON DELETE CASCADE
+);
+
+-- ==============================
+-- ALUMNI
+-- ==============================
+CREATE TABLE alumni (
+    alumni_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    name VARCHAR(255) NOT NULL,
+    company VARCHAR(255),
+    linkedin VARCHAR(255),
+    institute_id VARCHAR(100) NOT NULL,
+    mobile_number VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    batch INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE alumni_jobs (
+    record_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    alumni_id CHAR(36),
+    job_id VARCHAR(255),
+    role VARCHAR(255),
+    FOREIGN KEY (alumni_id)
+        REFERENCES alumni(alumni_id) ON DELETE CASCADE
+);
+
+-- ==============================
+-- REFERRALS
+-- ==============================
+CREATE TABLE referrals (
+    referral_id CHAR(36) PRIMARY KEY DEFAULT UUID(),
+    student_name VARCHAR(255) NOT NULL,
+    student_email VARCHAR(255) NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    job_id VARCHAR(255) NOT NULL,
+    resume_link VARCHAR(255) NOT NULL,
+    alumni_email VARCHAR(255),
+    referral_link VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+);
+\end{lstlisting}
+
+% ==========================================
+\section{Security Considerations}
+% ==========================================
+
+\begin{itemize}[nosep]
+    \item All passwords are hashed using \textbf{bcrypt} (cost factor 10) before storage.
+    \item Authentication uses \textbf{JWT tokens} with configurable expiry.
+    \item All API endpoints enforce role-based access control middleware.
+    \item New user registrations require \textbf{explicit Admin approval} before login is permitted.
+    \item The database port (3306) must \textbf{not} be exposed publicly; only \texttt{localhost} access.
+    \item The \texttt{.env} file containing secrets must have restricted file permissions (\texttt{chmod 600}).
+    \item HTTPS (TLS) is mandatory for production deployment to protect credentials in transit.
+    \item Non-admin roles are restricted to \texttt{@iitbhilai.ac.in} email domain during registration.
+\end{itemize}
+
+% ==========================================
+\section{Support \& Contact}
+% ==========================================
+
+For any technical queries regarding the deployment of this application, please contact:
+
+\begin{center}
+\begin{tabular}{rl}
+    \textbf{Team:}   & Centre for Career Planning and Services, IIT Bhilai \\
+    \textbf{Email:}  & ccps@iitbhilai.ac.in \\
+\end{tabular}
+\end{center}
+
+\vfill
+\begin{center}
+    \small\textit{--- End of Document ---}
+\end{center}
+
+\end{document}

@@ -13,9 +13,9 @@ export const fetchCallerDashboard = async () => {
 
 
 // fetch admin dashboard data
-export const fetchAdminDashboard = async () => {
+export const fetchAdminDashboard = async (params = {}) => {
   try {
-    const res = await apiClient.get("/dashboard/admin");
+    const res = await apiClient.get("/dashboard/admin", { params });
     return res.data;
   } catch (err) {
     console.error("Error fetching admin dashboard:", err);

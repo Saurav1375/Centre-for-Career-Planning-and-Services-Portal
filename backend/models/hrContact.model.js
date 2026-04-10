@@ -1,9 +1,10 @@
-import pool from '../config/postgredb.js'
-
+import pool from '../config/db.js'
+import crypto from "crypto";
 
 export default {
   // CREATE a new HR contact
 async createHRContact(contact) {
+  const contact_id = crypto.randomUUID();
   const {
     full_name,
     company_id,
@@ -15,25 +16,25 @@ async createHRContact(contact) {
     source,
     status = 'active',
     notes,
+    tags = '',
+    past_engagement = '',
     added_by_user_id,
     assigned_to_user_id,
     is_approved = false,
+    discipline = '',
+    contact_type = '',
+    deletion_requested = false,
   } = contact;
 
   const query = `
-    WITH inserted AS (
       INSERT INTO hr_contacts
-        (full_name, company_id, designation, email, phone_1, phone_2, linkedin_profile, source, status, notes, added_by_user_id, assigned_to_user_id, is_approved)
+        (contact_id, full_name, company_id, designation, email, phone_1, phone_2, linkedin_profile, source, status, notes, tags, past_engagement, added_by_user_id, assigned_to_user_id, is_approved, discipline, contact_type, deletion_requested)
       VALUES
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-      RETURNING *
-    )
-    SELECT i.*, c.company_name
-    FROM inserted i
-    LEFT JOIN companies c ON i.company_id = c.company_id;
+        (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `;
 
   const values = [
+    contact_id,
     full_name,
     company_id,
     designation,
@@ -44,13 +45,18 @@ async createHRContact(contact) {
     source,
     status,
     notes,
+    tags,
     added_by_user_id,
     assigned_to_user_id,
     is_approved,
+    discipline,
+    contact_type,
+    deletion_requested,
   ];
 
-  const result = await pool.query(query, values);
-  return result.rows[0];
+  await pool.query(query, values);
+  const [rows] = await pool.query(`SELECT i.*, c.company_name FROM hr_contacts i LEFT JOIN companies c ON i.company_id = c.company_id WHERE i.contact_id = ?`, [contact_id]);
+  return rows[0];
 },
 
 // READ all HR contacts (with added_by, assigned_to user names, and company name)
@@ -68,8 +74,8 @@ async getAllHRContacts() {
     ORDER BY hc.created_at DESC
   `;
 
-  const result = await pool.query(query);
-  return result.rows;
+  const [rows] = await pool.query(query);
+  return rows;
 },
 
 // READ one HR contact by ID (with user names and company name)
@@ -84,11 +90,11 @@ async getHRContactById(contact_id) {
     LEFT JOIN users u1 ON hc.added_by_user_id = u1.user_id
     LEFT JOIN users u2 ON hc.assigned_to_user_id = u2.user_id
     LEFT JOIN companies c ON hc.company_id = c.company_id
-    WHERE hc.contact_id = $1
+    WHERE hc.contact_id = ?
   `;
 
-  const result = await pool.query(query, [contact_id]);
-  return result.rows[0];
+  const [rows] = await pool.query(query, [contact_id]);
+  return rows[0];
 },
 
   // UPDATE an HR contact by ID
@@ -104,15 +110,19 @@ async getHRContactById(contact_id) {
       source,
       status,
       notes,
+      tags = '',
+      past_engagement = '',
       assigned_to_user_id,
       is_approved,
+      discipline = '',
+      contact_type = '',
+      deletion_requested = false,
     } = contact;
 
-    const result = await pool.query(
+    await pool.query(
       `UPDATE hr_contacts
-       SET full_name=$1, company_id=$2, designation=$3, email=$4, phone_1=$5, phone_2=$6, linkedin_profile=$7, source=$8, status=$9, notes=$10, assigned_to_user_id=$11, is_approved=$12, updated_at=NOW()
-       WHERE contact_id=$13
-       RETURNING *`,
+       SET full_name=?, company_id=?, designation=?, email=?, phone_1=?, phone_2=?, linkedin_profile=?, source=?, status=?, notes=?, tags=?, past_engagement=?, assigned_to_user_id=?, is_approved=?, discipline=?, contact_type=?, deletion_requested=?, updated_at=NOW()
+       WHERE contact_id=?`,
       [
         full_name,
         company_id,
@@ -124,28 +134,43 @@ async getHRContactById(contact_id) {
         source,
         status,
         notes,
+        tags,
+        past_engagement,
         assigned_to_user_id,
         is_approved,
+        discipline,
+        contact_type,
+        deletion_requested,
         contact_id,
       ]
     );
 
-    return result.rows[0];
+    const [rows] = await pool.query(`SELECT * FROM hr_contacts WHERE contact_id = ?`, [contact_id]);
+    return rows[0];
   },
 
 
 
+  async requestDeletion(contact_id) {
+    await pool.query(
+      `UPDATE hr_contacts
+       SET deletion_requested = true, updated_at = NOW()
+       WHERE contact_id = ?`,
+      [contact_id]
+    );
+    const [rows] = await pool.query(`SELECT * FROM hr_contacts WHERE contact_id = ?`, [contact_id]);
+    return rows[0];
+  },
 
 async toggleHRContactApproval(contact_id) {
-  const result = await pool.query(
+  await pool.query(
     `UPDATE hr_contacts
      SET is_approved = NOT is_approved, updated_at = NOW()
-     WHERE contact_id = $1
-     RETURNING *`,
+     WHERE contact_id = ?`,
     [contact_id]
   );
-
-  return result.rows[0];
+  const [rows] = await pool.query(`SELECT * FROM hr_contacts WHERE contact_id = ?`, [contact_id]);
+  return rows[0];
 },
 
 
@@ -153,48 +178,54 @@ async toggleHRContactApproval(contact_id) {
 async assignCallerToHR(contact_id, assigned_to_user_id) {
   const query = `
     UPDATE hr_contacts
-    SET assigned_to_user_id = $1, updated_at = NOW()
-    WHERE contact_id = $2
-    RETURNING *`;
+    SET assigned_to_user_id = ?, updated_at = NOW()
+    WHERE contact_id = ?`;
 
   const values = [assigned_to_user_id, contact_id];
-  const result = await pool.query(query, values);
-  return result.rows[0];
+  await pool.query(query, values);
+  const [rows] = await pool.query(`SELECT * FROM hr_contacts WHERE contact_id = ?`, [contact_id]);
+  return rows[0];
 },
 
 
 
 async assignHRsToCaller(callerId, hrIds) {
+    if(!hrIds || hrIds.length === 0) return [];
+    const placeholders = hrIds.map(() => '?').join(',');
     const query = `
       UPDATE hr_contacts
-      SET assigned_to_user_id = $1, updated_at = NOW()
-      WHERE contact_id = ANY($2::uuid[])
-      RETURNING *;
+      SET assigned_to_user_id = ?, updated_at = NOW()
+      WHERE contact_id IN (${placeholders})
     `;
-    const result = await pool.query(query, [callerId, hrIds]);
-    return result.rows;
+    await pool.query(query, [callerId, ...hrIds]);
+    const [rows] = await pool.query(`SELECT * FROM hr_contacts WHERE contact_id IN (${placeholders})`, [...hrIds]);
+    return rows;
   },
 
 
   async unassignHRs(hrIds) {
+  if(!hrIds || hrIds.length === 0) return [];
+  const placeholders = hrIds.map(() => '?').join(',');
   const query = `
     UPDATE hr_contacts
     SET assigned_to_user_id = NULL, updated_at = NOW()
-    WHERE contact_id = ANY($1::uuid[])
-    RETURNING *;
+    WHERE contact_id IN (${placeholders})
   `;
-  const result = await pool.query(query, [hrIds]);
-  return result.rows;
+  await pool.query(query, [...hrIds]);
+  const [rows] = await pool.query(`SELECT * FROM hr_contacts WHERE contact_id IN (${placeholders})`, [...hrIds]);
+  return rows;
 },
 
 
 
   // DELETE an HR contact by ID
   async deleteHRContact(contact_id) {
-    const result = await pool.query(
-      `DELETE FROM hr_contacts WHERE contact_id=$1 RETURNING *`,
+    const [rows] = await pool.query(`SELECT * FROM hr_contacts WHERE contact_id = ?`, [contact_id]);
+    if(rows.length === 0) return null;
+    await pool.query(
+      `DELETE FROM hr_contacts WHERE contact_id=?`,
       [contact_id]
     );
-    return result.rows[0];
+    return rows[0];
   },
 };

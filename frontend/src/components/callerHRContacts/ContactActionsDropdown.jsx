@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { MoreVertical, Eye, Edit } from 'lucide-react';
+import { MoreVertical, Eye, Edit, Trash2 } from 'lucide-react';
+import { requestHRDeletion } from '../../api/liaisoningAPIs/hrContacts.js';
 
 const ContactActionsDropdown = ({ contact, currentUser, setSelectedContact }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,6 +30,19 @@ const ContactActionsDropdown = ({ contact, currentUser, setSelectedContact }) =>
     setIsOpen(false);
   };
 
+  const handleDeleteRequest = async () => {
+    const reason = window.prompt(`Please provide a reason for requesting deletion of HR ${contact.full_name}:`);
+    if (reason) {
+      try {
+        await requestHRDeletion(contact.contact_id, reason);
+        alert('Deletion request sent correctly. Admins will process it shortly.');
+      } catch(err) {
+        alert('Failed to send deletion request. ' + err.message);
+      }
+    }
+    setIsOpen(false);
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -47,12 +61,20 @@ const ContactActionsDropdown = ({ contact, currentUser, setSelectedContact }) =>
               <Eye size={16} /> Show Details
             </button>
             {isAssignedToCurrentUser && (
-              <button
-                onClick={handleEdit}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                <Edit size={16} /> Edit Contact
-              </button>
+              <>
+                <button
+                  onClick={handleEdit}
+                  className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  <Edit size={16} /> Edit Contact
+                </button>
+                <button
+                  onClick={handleDeleteRequest}
+                  className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 size={16} /> Request Deletion
+                </button>
+              </>
             )}
           </div>
         </div>

@@ -32,3 +32,27 @@ export const sendAdminSMS = async (callerId, adminMessage) => {
   });
   return data;
 };
+
+// Bulk approve users
+export const bulkApproveUsers = async (userIds) => {
+  const { data } = await apiClient.post(`/users/bulk-approve`, { userIds });
+  return data;
+};
+
+// Bulk delete users
+export const bulkDeleteUsers = async (userIds) => {
+  const { data } = await apiClient.post(`/users/bulk-delete`, { userIds });
+  return data;
+};
+
+// Bulk revoke users
+export const bulkRevokeUsers = async (userIds) => {
+  const { data } = await apiClient.post(`/users/bulk-revoke`, { userIds });
+  return data;
+};
+
+// Update user role
+export const updateUserRole = async (id, role) => {
+  const { data } = await apiClient.patch(`/users/${id}/role`, { role });
+  return data;
+};

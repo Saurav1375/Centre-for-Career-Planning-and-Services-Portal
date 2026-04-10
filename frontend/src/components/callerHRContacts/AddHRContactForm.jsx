@@ -13,7 +13,11 @@ const AddHRContactForm = ({ setShowAddHRContactModal, fetchContacts }) => {
         phone_1: '',
         source: '',
         notes: '',
-        company_id: ''
+        tags: '',
+        past_engagement: '',
+        company_id: '',
+        discipline: '',
+        contact_type: ''
     });
 
     const [companies, setCompanies] = useState([]);
@@ -142,9 +146,46 @@ const AddHRContactForm = ({ setShowAddHRContactModal, fetchContacts }) => {
                             </div>
                         </div>
 
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label htmlFor="discipline" className="block text-sm font-medium text-slate-700">Discipline</label>
+                                <select name="discipline" id="discipline" value={formData.discipline} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md p-2">
+                                    <option value="">Select Branch</option>
+                                    <option value="CSE">CSE</option>
+                                    <option value="DSAI">DSAI</option>
+                                    <option value="ECE">ECE</option>
+                                    <option value="EE">EE</option>
+                                    <option value="ME">ME</option>
+                                    <option value="MT">MT</option>
+                                    <option value="MSME">MSME</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label htmlFor="contact_type" className="block text-sm font-medium text-slate-700">Contact Type</label>
+                                <select name="contact_type" id="contact_type" value={formData.contact_type} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md p-2">
+                                    <option value="">Select Type</option>
+                                    <option value="HR">HR</option>
+                                    <option value="Technical">Technical</option>
+                                    <option value="Alumni">Alumni</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div>
                             <label htmlFor="source" className="block text-sm font-medium text-slate-700">Source</label>
                             <input type="text" name="source" id="source" value={formData.source} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., LinkedIn, Alumni Referral..." />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label htmlFor="tags" className="block text-sm font-medium text-slate-700">Tags</label>
+                                <input type="text" name="tags" id="tags" value={formData.tags} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., Priority, Tech, Local..." />
+                            </div>
+                            <div>
+                                <label htmlFor="past_engagement" className="block text-sm font-medium text-slate-700">Past Engagement</label>
+                                <input type="text" name="past_engagement" id="past_engagement" value={formData.past_engagement} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500" placeholder="Previous interaction details..." />
+                            </div>
                         </div>
 
                         <div>

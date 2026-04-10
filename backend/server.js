@@ -2,8 +2,8 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-// import connectDB from "./config/db.js";
 import apiRouter from "./routes/index.router.js";
+import "./utils/cron.js"; // Initialize Cron Jobs
 
 dotenv.config();
 

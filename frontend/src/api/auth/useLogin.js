@@ -5,8 +5,8 @@ import { useAppContext } from '../../context/AppContext.jsx';
  
  const useLogin = () => {
     const [loading, setLoading] = useState(false);
-    const {setAuthUser,setTempUserId} = useAuthContext();
-    const { backendUrl, setShowVerifyEmail } = useAppContext();
+    const {setAuthUser} = useAuthContext();
+    const { backendUrl } = useAppContext();
     const login = async (email, password) => {
         const success = handleInputError(email, password);
         if(!success) return;
@@ -22,11 +22,7 @@ import { useAppContext } from '../../context/AppContext.jsx';
             })
             const data = await res.json();
             if(!res.ok){
-                if(data.message === "Email is not verified"){
-                    setTempUserId(data.userId);
-                    setShowVerifyEmail(true)
-                }
-                throw new Error(data.message)
+                throw new Error(data.message || data.error || "Login Failed")
             }
             localStorage.setItem("ccps-user", JSON.stringify(data.userData))
             localStorage.setItem("ccps-token", data.token)

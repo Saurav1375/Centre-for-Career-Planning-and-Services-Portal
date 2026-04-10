@@ -4,6 +4,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import LogoutButton from "../pages/auth/LogoutButton";
 import { useAuthContext } from "../context/AuthContext";
+import NotificationBell from "./NotificationBell";
 
 const Sidebar = () => {
   const { authUser } = useAuthContext();
@@ -105,12 +106,15 @@ const Sidebar = () => {
             </span>
           </span>
         </NavLink>
-        <button
-          onClick={() => setIsOpen((v) => !v)}
-          className="p-2 rounded hover:bg-[#13665b] transition"
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <button
+            onClick={() => setIsOpen((v) => !v)}
+            className="p-2 rounded hover:bg-[#13665b] transition"
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
 
@@ -155,6 +159,10 @@ const Sidebar = () => {
               </span>
             </span>
           </NavLink>
+
+          <div className="px-6 mb-6">
+             <NotificationBell />
+          </div>
 
           <nav className="flex flex-col space-y-1 overflow-y-auto">
             {navItems}

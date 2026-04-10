@@ -1,7 +1,7 @@
 import ContactRow from './ContactRow';
 
 
-const ContactsTable = ({ contacts, currentUser, setSelectedContact }) => {
+const ContactsTable = ({ contacts, currentUser, setSelectedContact, onAddCallLog }) => {
 
 
   return (
@@ -22,7 +22,13 @@ const ContactsTable = ({ contacts, currentUser, setSelectedContact }) => {
           <tbody className="bg-white divide-y divide-gray-200">
             {contacts.length > 0 ? (
               contacts.map((contact) => (
-                <ContactRow key={contact.id} contact={contact} currentUser={currentUser} setSelectedContact={setSelectedContact} />
+                <ContactRow 
+                  key={contact.contact_id} 
+                  contact={contact} 
+                  currentUser={currentUser} 
+                  setSelectedContact={setSelectedContact}
+                  onAddCallLog={onAddCallLog}
+                />
               ))
             ) : (
               <tr>

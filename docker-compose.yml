@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: ccps_mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: mariadb_pw
+      MARIADB_DATABASE: ccps
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql

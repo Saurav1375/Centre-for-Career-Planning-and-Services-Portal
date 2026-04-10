@@ -13,6 +13,7 @@ const ContactAssignmentPage = () => {
     const [selectedCaller, setSelectedCaller] = useState(null);
     const [selectedContactIds, setSelectedContactIds] = useState([]);
     const [filter, setFilter] = useState('unassigned'); 
+    const [sharedBranchFilter, setSharedBranchFilter] = useState('');
     const [mode, setMode] = useState('assign'); 
     const [searchTerm, setSearchTerm] = useState('');
     const [callerSearchTerm, setCallerSearchTerm] = useState('');
@@ -46,15 +47,20 @@ const ContactAssignmentPage = () => {
             result = result.filter(c => c.assigned_to_user_id);
         }
 
+        if (sharedBranchFilter) {
+            result = result.filter(c => c.discipline === sharedBranchFilter);
+        }
+
         if (searchTerm) {
             const lower = searchTerm.toLowerCase();
             result = result.filter(c =>
                 c.full_name.toLowerCase().includes(lower) ||
-                (c.company_id && c.company_id.toLowerCase().includes(lower))
+                (c.company_name && c.company_name.toLowerCase().includes(lower)) ||
+                (c.discipline && c.discipline.toLowerCase().includes(lower))
             );
         }
         setFilteredContacts(result);
-    }, [contacts, filter, searchTerm]);
+    }, [contacts, filter, sharedBranchFilter, searchTerm]);
 
     // Select contact
     const handleSelectContact = (contactId) => {
@@ -103,11 +109,13 @@ const ContactAssignmentPage = () => {
                 <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Callers List */}
                     <CallersList
-                        callers={callers}
+                        callers={callers.filter(c => !sharedBranchFilter || c.branch === sharedBranchFilter)}
                         selectedCaller={selectedCaller}
                         setSelectedCaller={setSelectedCaller}
                         callerSearchTerm={callerSearchTerm}
                         setCallerSearchTerm={setCallerSearchTerm}
+                        callerBranchFilter={sharedBranchFilter}
+                        setCallerBranchFilter={setSharedBranchFilter}
                         mode={mode}
                         setMode={setMode}
                     />
@@ -119,6 +127,8 @@ const ContactAssignmentPage = () => {
                         filteredContacts={filteredContacts}
                         filter={filter}
                         setFilter={setFilter}
+                        disciplineFilter={sharedBranchFilter}
+                        setDisciplineFilter={setSharedBranchFilter}
                         searchTerm={searchTerm}
                         setSearchTerm={setSearchTerm}
                         selectedContactIds={selectedContactIds}

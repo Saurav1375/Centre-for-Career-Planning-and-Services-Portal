@@ -1,4 +1,4 @@
-import pool from "../config/postgredb.js";
+import pool from "../config/db.js";
 
 const Users = {
   // Get users with optional filters
@@ -6,7 +6,6 @@ const Users = {
     let query = `SELECT user_id, full_name, email, role, is_approved, is_verified, created_at, last_active_at
                  FROM users WHERE 1=1`;
     const values = [];
-    let idx = 1;
 
     if (status === "approved") {
       query += ` AND is_approved = true`;
@@ -15,15 +14,14 @@ const Users = {
     }
 
     if (role) {
-      query += ` AND role = $${idx}`;
+      query += ` AND role = ?`;
       values.push(role);
-      idx++;
     }
 
     query += ` ORDER BY created_at DESC`;
 
-    const result = await pool.query(query, values);
-    return result.rows;
+    const [rows] = await pool.query(query, values);
+    return rows;
   },
 
   // Approve user
@@ -31,28 +29,72 @@ const Users = {
     const query = `
       UPDATE users 
       SET is_approved = true, updated_at = NOW() 
-      WHERE user_id = $1 RETURNING user_id, full_name, email, is_approved
+      WHERE user_id = ?
     `;
-    const result = await pool.query(query, [user_id]);
-    return result.rows[0];
+    await pool.query(query, [user_id]);
+    const [rows] = await pool.query(`SELECT user_id, full_name, email, is_approved FROM users WHERE user_id = ?`, [user_id]);
+    return rows[0];
   },
 
-   // Revoke user
+  // Revoke user
   async revokeUser(user_id) {
     const query = `
       UPDATE users 
       SET is_approved = false, updated_at = NOW() 
-      WHERE user_id = $1 RETURNING user_id, full_name, email, is_approved
+      WHERE user_id = ?
     `;
-    const result = await pool.query(query, [user_id]);
-    return result.rows[0];
+    await pool.query(query, [user_id]);
+    const [rows] = await pool.query(`SELECT user_id, full_name, email, is_approved FROM users WHERE user_id = ?`, [user_id]);
+    return rows[0];
+  },
+
+  // Update role
+  async updateRole(user_id, role) {
+    const query = `
+      UPDATE users
+      SET role = ?, updated_at = NOW()
+      WHERE user_id = ?
+    `;
+    await pool.query(query, [role, user_id]);
+    const [rows] = await pool.query(`SELECT user_id, full_name, role FROM users WHERE user_id = ?`, [user_id]);
+    return rows[0];
   },
 
   // Delete (reject) user
   async deleteUser(user_id) {
-    const query = `DELETE FROM users WHERE user_id = $1 RETURNING user_id`;
-    const result = await pool.query(query, [user_id]);
-    return result.rows[0];
+    const [rows] = await pool.query(`SELECT user_id FROM users WHERE user_id = ?`, [user_id]);
+    if(rows.length === 0) return null;
+    await pool.query(`DELETE FROM users WHERE user_id = ?`, [user_id]);
+    return rows[0];
+  },
+
+  async bulkApproveUsers(user_ids) {
+    if (!user_ids || user_ids.length === 0) return [];
+    const query = `
+      UPDATE users 
+      SET is_approved = true, updated_at = NOW() 
+      WHERE user_id IN (?)
+    `;
+    await pool.query(query, [user_ids]);
+    // Notify users optionally
+    return user_ids;
+  },
+
+  async bulkRevokeUsers(user_ids) {
+    if (!user_ids || user_ids.length === 0) return [];
+    const query = `
+      UPDATE users 
+      SET is_approved = false, updated_at = NOW() 
+      WHERE user_id IN (?)
+    `;
+    await pool.query(query, [user_ids]);
+    return user_ids;
+  },
+
+  async bulkDeleteUsers(user_ids) {
+    if (!user_ids || user_ids.length === 0) return [];
+    await pool.query(`DELETE FROM users WHERE user_id IN (?)`, [user_ids]);
+    return user_ids;
   }
 };
 

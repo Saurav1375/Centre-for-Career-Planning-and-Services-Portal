@@ -5,7 +5,7 @@ import {
     getAllPreapprovedEmails,
     addPreapprovedEmails,
     deletePreapprovedEmails,
-} from "../../api/liaisoningAPIs/preapprovedEmails";
+} from "../../api/liaisoningAPIs/preapprovedemails";
 
 // --- Add Preapproved Emails Modal Component ---
 const PreapprovedEmailsModal = ({ onClose }) => {

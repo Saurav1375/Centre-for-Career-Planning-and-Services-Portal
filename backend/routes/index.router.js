@@ -21,6 +21,8 @@ import companyRoutes from "./company.routes.js";
 import callersStats from "./callersStats.routes.js";
 import users from "./users.route.js";
 import preapprovedEmailRoutes from "./preapprovedEmails.routes.js";
+import notificationsRoutes from "./notifications.routes.js";
+import filesRoutes from "./files.routes.js";
 
 const router = express.Router();
 
@@ -45,5 +47,7 @@ router.use("/companies", companyRoutes);
 router.use("/callers-stats", callersStats);
 router.use("/users", users);
 router.use("/preapproved-emails", preapprovedEmailRoutes);
+router.use("/notifications", notificationsRoutes);
+router.use("/files", filesRoutes);
 
 export default router;

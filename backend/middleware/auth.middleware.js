@@ -1,7 +1,7 @@
 // middleware/auth.middleware.js
 import jwt from "jsonwebtoken";
 import { config } from "dotenv";
-import pool from "../config/postgredb.js";
+import pool from "../config/db.js";
 import CallLog from "../models/callLog.model.js";
 import HRContact from "../models/hrContact.model.js";
 
@@ -30,12 +30,12 @@ export const protectRoute = async (req, res, next) => {
       return res.status(401).json({ success: false, message: "Not Authorized. Token invalid" });
     }
 
-    // Fetch user from PostgreSQL
-    const query = `SELECT user_id, full_name, email, role FROM users WHERE user_id = $1`;
-    const { rows } = await pool.query(query, [decoded.userId]);
+    // Fetch user from MariaDB
+    const query = `SELECT user_id, full_name, email, role FROM users WHERE user_id = ?`;
+    const [rows] = await pool.query(query, [decoded.userId]);
 
     if (rows.length === 0) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(401).json({ success: false, message: "User not found or deleted. Please login again." });
     }
 
     req.user = rows[0];
@@ -120,7 +120,7 @@ export const trackActivity = async (req, res, next) => {
   if (req.user) {
     try {
       await pool.query(
-        `UPDATE users SET last_active_at = NOW() WHERE user_id = $1`,
+        `UPDATE users SET last_active_at = NOW() WHERE user_id = ?`,
         [req.user.user_id]
       );
     } catch (err) {

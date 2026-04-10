@@ -1,5 +1,4 @@
-// models/callersStats.model.js
-import pool from "../config/postgredb.js";
+import pool from "../config/db.js";
 
 const CallersStats = {
   async getAllStats() {
@@ -31,7 +30,7 @@ const CallersStats = {
       LEFT JOIN (
         SELECT added_by_user_id,
                COUNT(*) AS total_contacts_added,
-               COUNT(*) FILTER (WHERE is_approved = TRUE) AS approved_contacts_added
+               SUM(CASE WHEN is_approved = TRUE THEN 1 ELSE 0 END) AS approved_contacts_added
         FROM hr_contacts
         GROUP BY added_by_user_id
       ) ad ON ad.added_by_user_id = u.user_id
@@ -39,23 +38,22 @@ const CallersStats = {
       LEFT JOIN (
         SELECT caller_id,
                COUNT(*) AS total_call_logs,
-               COUNT(*) FILTER (WHERE call_outcome = 'connected') AS connected_calls,
-               COUNT(*) FILTER (WHERE call_outcome = 'not_reachable') AS not_reachable_calls,
-               COUNT(*) FILTER (WHERE call_outcome = 'follow_up') AS follow_up_calls,
-               COUNT(*) FILTER (WHERE call_outcome = 'positive') AS positive_calls,
-               COUNT(*) FILTER (WHERE call_outcome = 'negative') AS negative_calls
+               SUM(CASE WHEN call_outcome = 'connected' THEN 1 ELSE 0 END) AS connected_calls,
+               SUM(CASE WHEN call_outcome = 'not_reachable' THEN 1 ELSE 0 END) AS not_reachable_calls,
+               SUM(CASE WHEN call_outcome = 'follow_up' THEN 1 ELSE 0 END) AS follow_up_calls,
+               SUM(CASE WHEN call_outcome = 'positive' THEN 1 ELSE 0 END) AS positive_calls,
+               SUM(CASE WHEN call_outcome = 'negative' THEN 1 ELSE 0 END) AS negative_calls
         FROM call_logs
         GROUP BY caller_id
       ) cl ON cl.caller_id = u.user_id
 
-      WHERE u.role = 'caller'
+      WHERE u.role = 'Caller'
       ORDER BY u.full_name;
     `;
 
-    const result = await pool.query(query);
+    const [rows] = await pool.query(query);
 
-    // Convert bigint strings to numbers
-    return result.rows.map(r => ({
+    return rows.map(r => ({
       caller_id: r.caller_id,
       full_name: r.full_name,
       email: r.email,

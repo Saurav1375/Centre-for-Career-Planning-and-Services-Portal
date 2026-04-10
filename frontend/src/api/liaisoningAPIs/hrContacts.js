@@ -58,3 +58,8 @@ export const exportHRContactsCSV = async () => {
   const { data } = await apiClient.get("/hr-contacts/export/csv");
   return data;
 };
+
+export const requestHRDeletion = async (id, reason) => {
+  const { data } = await apiClient.post(`/hr-contacts/${id}/request-deletion`, { reason });
+  return data;
+};

@@ -7,6 +7,7 @@ import ContactsTable from '../../components/callerHRContacts/ContactTable.jsx';
 import Sidebar from '../../components/Sidebar.jsx';
 import AddHRContactForm from '../../components/callerHRContacts/AddHRContactForm.jsx';
 import HRContactDetailsPage from '../../components/callerHRContacts/HRContactDetails/HRContactDetailsPage.jsx';
+import LogForm from '../../components/callerDashboard/LogForm.jsx';
 
 const HRContactsPage = () => {
   const [contacts, setContacts] = useState([]);
@@ -17,6 +18,8 @@ const HRContactsPage = () => {
   const CURRENT_USER_ID = authUser?._id;
 
   const [showAddHRContactModal, setShowAddHRContactModal] = useState(false);
+  const [showLogForm, setShowLogForm] = useState(false);
+  const [selectedHRForLog, setSelectedHRForLog] = useState(null);
 
   const [selectedContact, setSelectedContact] = useState(null);
 
@@ -74,7 +77,15 @@ const HRContactsPage = () => {
           assignmentFilter={assignmentFilter}
           setAssignmentFilter={setAssignmentFilter}
         />
-        <ContactsTable contacts={filteredContacts} currentUser={CURRENT_USER_ID} setSelectedContact={setSelectedContact} />
+        <ContactsTable 
+          contacts={filteredContacts} 
+          currentUser={CURRENT_USER_ID} 
+          setSelectedContact={setSelectedContact}
+          onAddCallLog={(contact) => {
+            setSelectedHRForLog(contact);
+            setShowLogForm(true);
+          }}
+        />
       </div>
     </div>
 
@@ -86,6 +97,10 @@ const HRContactsPage = () => {
 
      { selectedContact && (
        <HRContactDetailsPage selectedContact={selectedContact} onClose={() => setSelectedContact(null)} />
+     )}
+
+     { showLogForm && (
+       <LogForm hr={selectedHRForLog} setLogForm={setShowLogForm} onSubmit={fetchContacts} />
      )}
 
 

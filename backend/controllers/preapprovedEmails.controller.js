@@ -1,5 +1,4 @@
 import PreapprovedEmail from "../models/preapprovedEmails.model.js";
-import { sendCallerApprovedEmail } from "../utils/emails.js";
 
 // Get all preapproved emails
 export const getPreapprovedEmails = async (req, res) => {
@@ -23,13 +22,7 @@ export const addPreapprovedEmails = async (req, res) => {
 
     const added = await PreapprovedEmail.bulkInsert(emails);
 
-    await Promise.all(
-      added.map((row) =>
-        sendCallerApprovedEmail(row.email, "https://localhost:5173/signup")
-      )
-    );
-
-    res.json({ success: true, message: "Emails added successfully & notifications sent", data: added });
+    res.json({ success: true, message: "Emails added successfully", data: added });
   } catch (error) {
     console.error("Error in addPreapprovedEmails:", error.message);
     res.status(500).json({ success: false, message: "Internal server error" });

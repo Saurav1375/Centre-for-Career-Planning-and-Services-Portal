@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { MoreVertical } from 'lucide-react';
-import { revokeUser } from '../../api/liaisoningAPIs/users';
+import { updateUserRole, revokeUser } from '../../api/liaisoningAPIs/users';
 
 const UserActionsDropdown = ({ user, fetchData, setSelectedContactToSms }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +29,13 @@ const UserActionsDropdown = ({ user, fetchData, setSelectedContactToSms }) => {
             {isOpen && (
                 <div className="absolute z-10 right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5">
                     <a onClick={() => setSelectedContactToSms(user)} className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Send Message</a>
-                    <a onClick={() => handleRevoke(user.user_id)} className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Revoke Access</a>
+                    {user.role === 'caller' && (
+                        <a onClick={async () => { await updateUserRole(user.user_id, 'moderator'); fetchData(); }} className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 cursor-pointer">Make Moderator</a>
+                    )}
+                    {user.role === 'moderator' && (
+                        <a onClick={async () => { await updateUserRole(user.user_id, 'caller'); fetchData(); }} className="block px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 cursor-pointer">Demote to Caller</a>
+                    )}
+                    <a onClick={() => handleRevoke(user.user_id)} className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer">Revoke Access</a>
                 </div>
             )}
         </div>

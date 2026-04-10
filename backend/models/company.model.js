@@ -1,40 +1,40 @@
-import pool from "../config/postgredb.js";
+import pool from "../config/db.js";
+import crypto from 'crypto';
 
 const Company = {
   // Create company
   async createCompany({ company_name, website, industry_sector, address }) {
+    const company_id = crypto.randomUUID();
     const query = `
-      INSERT INTO companies (company_name, website, industry_sector, address)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *;
+      INSERT INTO companies (company_id, company_name, website, industry_sector, address)
+      VALUES (?, ?, ?, ?, ?)
     `;
-    const values = [company_name, website, industry_sector, address];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const values = [company_id, company_name, website, industry_sector, address];
+    await pool.query(query, values);
+    const [rows] = await pool.query(`SELECT * FROM companies WHERE company_id = ?`, [company_id]);
+    return rows[0];
   },
 
   // Get all companies
   async getAllCompanies() {
-    const result = await pool.query(`SELECT * FROM companies ORDER BY created_at DESC;`);
-    return result.rows;
+    const [rows] = await pool.query(`SELECT * FROM companies ORDER BY created_at DESC;`);
+    return rows;
   },
 
   // Get single company
   async getCompanyById(id) {
-    const result = await pool.query(`SELECT * FROM companies WHERE company_id=$1;`, [id]);
-    return result.rows[0];
+    const [rows] = await pool.query(`SELECT * FROM companies WHERE company_id=?;`, [id]);
+    return rows[0];
   },
 
   // Update company
   async updateCompany(id, data) {
     const fields = [];
     const values = [];
-    let idx = 1;
 
     for (const [key, value] of Object.entries(data)) {
-      fields.push(`${key}=$${idx}`);
+      fields.push(`${key}=?`);
       values.push(value);
-      idx++;
     }
 
     if (fields.length === 0) return null;
@@ -43,20 +43,19 @@ const Company = {
     const query = `
       UPDATE companies
       SET ${fields.join(", ")}, created_at=NOW()
-      WHERE company_id=$${idx}
-      RETURNING *;
+      WHERE company_id=?
     `;
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    await pool.query(query, values);
+    const [rows] = await pool.query(`SELECT * FROM companies WHERE company_id = ?`, [id]);
+    return rows[0];
   },
 
   // Delete company
   async deleteCompany(id) {
-    const result = await pool.query(
-      `DELETE FROM companies WHERE company_id=$1 RETURNING *;`,
-      [id]
-    );
-    return result.rows[0];
+    const [rows] = await pool.query(`SELECT * FROM companies WHERE company_id = ?`, [id]);
+    if(rows.length === 0) return null;
+    await pool.query(`DELETE FROM companies WHERE company_id=?;`, [id]);
+    return rows[0];
   }
 };
 

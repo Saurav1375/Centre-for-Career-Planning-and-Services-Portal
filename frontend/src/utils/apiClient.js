@@ -3,7 +3,7 @@ import axios from "axios";
 
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:3000/api", // your backend base URL
+  baseURL: import.meta.env.VITE_BACKEND_URL ? `${import.meta.env.VITE_BACKEND_URL}/api` : "http://localhost:3000/api", // your backend base URL
   withCredentials: true,
 });
 
@@ -14,5 +14,20 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      localStorage.removeItem("ccps-token");
+      localStorage.removeItem("ccps-user");
+      // Add a slight delay to ensure localstorage is flushed before navigating
+      setTimeout(() => {
+        window.location.replace("/login");
+      }, 100);
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;

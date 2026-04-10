@@ -1,38 +1,30 @@
-import mongoose from "mongoose";
-import {config} from 'dotenv'
-config();
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+// 🔥 Fix for ES modules (__dirname equivalent)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-if (!MONGODB_URI) {
-  throw new Error("MONGODB_URI is not defined in environment variables.");
-}
+// ✅ Load .env from backend folder
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
-let cached = global.mongoose;
+// 🔍 Debug
+console.log("DB CONFIG:", {
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT
+});
 
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
+});
 
-async function connectDB() {
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-    if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      bufferCommands: false,
-    });
-  }
-
-  try {
-    cached.conn = await cached.promise;
-    console.log("MongoDB connected");
-    return cached.conn;
-  } catch (err) {
-    console.error("MongoDB connection error:", err);
-    throw err;
-  }
-}
-
-export default connectDB;
+export default pool;

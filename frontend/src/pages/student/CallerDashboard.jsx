@@ -45,7 +45,7 @@ const CallerDashboard = () => {
     fetchCallerDashboard().then(res => setDashboardData(res.data));
   }
 
-  const { stats, recent_call_logs, upcoming_follow_ups, assigned_hr_contacts } = dashboardData;
+  const { stats, recent_call_logs, upcoming_follow_ups, assigned_hr_contacts, todays_follow_ups, top_callers } = dashboardData;
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -57,9 +57,16 @@ const CallerDashboard = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-[#0c4a42]">Caller Dashboard</h1>
-          <button className="bg-[#0c4a42] text-white px-4 py-2 rounded-lg shadow hover:bg-[#106d60] transition" onClick={() => setShowHROptionForLogForm(!showHROptionForLogForm)} >
-            + Log New Interaction
-          </button>
+          <div className="flex gap-4 items-center">
+             {top_callers && top_callers.length > 0 && (
+                <div className="bg-yellow-50 text-yellow-800 px-4 py-2 rounded-lg shadow-sm border border-yellow-200">
+                    🏆 Top Caller: <span className="font-bold">{top_callers[0].name}</span> ({top_callers[0].calls} calls)
+                </div>
+            )}
+            <button className="bg-[#0c4a42] text-white px-4 py-2 rounded-lg shadow hover:bg-[#106d60] transition" onClick={() => setShowHROptionForLogForm(!showHROptionForLogForm)} >
+              + Log New Interaction
+            </button>
+          </div>
         </div>
 
         {/* Stats Section */}
@@ -81,7 +88,37 @@ const CallerDashboard = () => {
 
           {/* Right section: Follow-ups */}
           <div className="space-y-6">
-            <UpcomingFollowUps followUps={upcoming_follow_ups} />
+            <div className="bg-white p-5 rounded-lg shadow border-l-4 border-[#d97706]">
+                <h3 className="text-lg font-bold text-[#0c4a42] mb-3 border-b pb-2">Calls for Today</h3>
+                {todays_follow_ups && todays_follow_ups.length > 0 ? (
+                    <ul className="space-y-3">
+                        {todays_follow_ups.map((log) => (
+                            <li key={log.log_id} className="text-sm">
+                                <span className="font-semibold text-gray-800">{log.contact_name}</span> from <span className="text-gray-600 italic">{log.company_name}</span>
+                                {log.remarks && <p className="text-xs text-gray-500 mt-1">Remarks: {log.remarks}</p>}
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-sm text-gray-500">No calls scheduled for today.</p>
+                )}
+            </div>
+            <div className="bg-white p-5 rounded-lg shadow border-l-4 border-blue-600">
+                <h3 className="text-lg font-bold text-[#0c4a42] mb-3 border-b pb-2">Upcoming Follow-Up</h3>
+                {upcoming_follow_ups && upcoming_follow_ups.length > 0 ? (
+                    <ul className="space-y-3">
+                        {upcoming_follow_ups.map((log) => (
+                            <li key={log.log_id} className="text-sm">
+                                <span className="font-semibold text-gray-800">{log.contact_name}</span> from <span className="text-gray-600 italic">{log.company_name}</span>
+                                {log.remarks && <p className="text-xs text-gray-500 mt-1">Remarks: {log.remarks}</p>}
+                                <p className="text-xs text-blue-600 mt-1">Due: {new Date(log.next_follow_up_date).toLocaleDateString()}</p>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-sm text-gray-500">No upcoming follow-ups.</p>
+                )}
+            </div>
           </div>
         </div>
 

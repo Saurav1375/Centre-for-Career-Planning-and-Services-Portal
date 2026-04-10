@@ -1,6 +1,6 @@
 import Users from "../models/users.model.js";
-import { sendAdminSMSToCaller } from "../utils/emails.js";
-import pool from "../config/postgredb.js"
+import { createNotification } from "../utils/notifications.js";
+import pool from "../config/db.js"
 
 // Get users (approved, pending, all)
 export const getUsers = async (req, res) => {
@@ -65,6 +65,74 @@ export const deleteUser = async (req, res) => {
   }
 };
 
+// Update user role
+export const updateUserRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+    
+    if (!['admin', 'moderator', 'caller'].includes(role)) {
+      return res.status(400).json({ success: false, message: "Invalid role specified" });
+    }
+
+    const updated = await Users.updateRole(id, role);
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, message: "Role updated", data: updated });
+  } catch (error) {
+    console.error("Error updating user role:", error.message);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+// Bulk Approve Users
+export const bulkApproveUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+    if (!userIds || userIds.length === 0) {
+      return res.status(400).json({ success: false, message: "No users provided" });
+    }
+    const approvedIds = await Users.bulkApproveUsers(userIds);
+    res.json({ success: true, message: "Users approved successfully", data: approvedIds });
+  } catch (error) {
+    console.error("Error bulk approving users:", error.message);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+// Bulk Delete Users
+export const bulkDeleteUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+    if (!userIds || userIds.length === 0) {
+      return res.status(400).json({ success: false, message: "No users provided" });
+    }
+    const deletedIds = await Users.bulkDeleteUsers(userIds);
+    res.json({ success: true, message: "Users deleted successfully", data: deletedIds });
+  } catch (error) {
+    console.error("Error bulk deleting users:", error.message);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+// Bulk Revoke Users
+export const bulkRevokeUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+    if (!userIds || userIds.length === 0) {
+      return res.status(400).json({ success: false, message: "No users provided" });
+    }
+    const revokedIds = await Users.bulkRevokeUsers(userIds);
+    res.json({ success: true, message: "Users revoked successfully", data: revokedIds });
+  } catch (error) {
+    console.error("Error bulk revoking users:", error.message);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
 
 
 export const sendAdminSMSToCallerController = async (req, res) => {
@@ -76,24 +144,29 @@ export const sendAdminSMSToCallerController = async (req, res) => {
       return res.status(400).json({ error: "Admin message is required" });
     }
 
-    // Query caller from PostgreSQL
-    const result = await pool.query(
-      "SELECT user_id, full_name, email FROM users WHERE user_id = $1",
+    // Query caller from MariaDB
+    const [rows] = await pool.query(
+      "SELECT user_id, full_name, email FROM users WHERE user_id = ?",
       [callerId]
     );
 
-    if (result.rows.length === 0) {
+    if (rows.length === 0) {
       return res.status(404).json({ error: "Caller not found" });
     }
 
-    const caller = result.rows[0];
+    const caller = rows[0];
 
-    // Call the email service
-    await sendAdminSMSToCaller(caller.email, caller.full_name, adminMessage);
+    // Create Notification
+    await createNotification(
+      caller.user_id,
+      "Message from Admin",
+      adminMessage,
+      "system"
+    );
 
-    res.status(200).json({ message: "Admin SMS (email) sent successfully" });
+    res.status(200).json({ message: "Admin message sent successfully" });
   } catch (error) {
     console.error("Error in sendAdminSMSToCallerController:", error.message);
-    res.status(500).json({ error: "Failed to send Admin SMS" });
+    res.status(500).json({ error: "Failed to send Admin message" });
   }
 };

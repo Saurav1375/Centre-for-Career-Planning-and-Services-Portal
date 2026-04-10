@@ -14,18 +14,20 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const AdminDashboardPage = () => {
     const [data, setData] = useState(null);
+    const [userIdFilter, setUserIdFilter] = useState("all");
+    const [weekOffset, setWeekOffset] = useState(0);
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                const res = await fetchAdminDashboard();
+                const res = await fetchAdminDashboard({ userId: userIdFilter, weekOffset });
                 if (res.success) setData(res.data);
             } catch (err) {
                 console.error("Error fetching dashboard:", err);
             }
         };
         loadData();
-    }, []);
+    }, [userIdFilter, weekOffset]);
 
     if (!data) return <div className="p-8">Loading dashboard...</div>;
 
@@ -52,8 +54,44 @@ const AdminDashboardPage = () => {
             </aside>
 
             <main className="flex-1 p-8 overflow-y-auto">
-                <h1 className="text-3xl font-bold text-slate-800">Dashboard</h1>
-                <p className="text-slate-500 mt-1">Overview of student activity and placement outreach.</p>
+                <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-800">Dashboard</h1>
+                        <p className="text-slate-500 mt-1">Overview of student activity and placement outreach.</p>
+                    </div>
+                    
+                    <div className="flex gap-4 items-center">
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">Select Caller</label>
+                            <select 
+                                value={userIdFilter} 
+                                onChange={(e) => setUserIdFilter(e.target.value)}
+                                className="border border-slate-300 rounded-md p-2 text-sm focus:ring-teal-500 focus:border-teal-500 min-w-[200px]"
+                            >
+                                <option value="all">All Callers</option>
+                                {data.callers && data.callers.map(caller => (
+                                    <option key={caller.user_id} value={caller.user_id}>
+                                        {caller.full_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">Time Period</label>
+                            <select 
+                                value={weekOffset} 
+                                onChange={(e) => setWeekOffset(Number(e.target.value))}
+                                className="border border-slate-300 rounded-md p-2 text-sm focus:ring-teal-500 focus:border-teal-500"
+                            >
+                                <option value={0}>Current Week</option>
+                                <option value={1}>Previous Week</option>
+                                <option value={2}>2 Weeks Ago</option>
+                                <option value={3}>3 Weeks Ago</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
                     <StatCard title="Total Calls This Week" value={data.stats.totalCalls.toLocaleString()} icon={Phone} color="teal" />

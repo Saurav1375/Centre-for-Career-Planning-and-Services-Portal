@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { toggleHRContactApproval } from '../../api/liaisoningAPIs/hrContacts.js';
+import { toggleHRContactApproval, deleteHRContact } from '../../api/liaisoningAPIs/hrContacts.js';
 
 const PendingApprovalView = ({ contacts, fetchContacts }) => {
     const [selectedPending, setSelectedPending] = useState([]);
@@ -20,6 +20,36 @@ const PendingApprovalView = ({ contacts, fetchContacts }) => {
         fetchContacts();
     };
 
+    const handleBulkApprove = async () => {
+        if (!window.confirm(`Are you sure you want to approve ${selectedPending.length} contacts?`)) return;
+        await Promise.all(selectedPending.map(id => toggleHRContactApproval(id)));
+        setSelectedPending([]);
+        fetchContacts();
+    };
+
+    const rejectContact = async (id) => {
+        if (!window.confirm("Reject and delete this contact?")) return;
+        try {
+            await deleteHRContact(id);
+            fetchContacts();
+        } catch (error) {
+            console.error(error);
+            alert("Failed to reject contact: " + (error.response?.data?.message || error.message));
+        }
+    };
+
+    const handleBulkReject = async () => {
+        if (!window.confirm(`Are you sure you want to reject (delete) ${selectedPending.length} contacts?`)) return;
+        try {
+            await Promise.all(selectedPending.map(id => deleteHRContact(id)));
+            setSelectedPending([]);
+            fetchContacts();
+        } catch (error) {
+            console.error(error);
+            alert("Failed to reject selected contacts: " + (error.response?.data?.message || error.message));
+        }
+    };
+
     return (
         <div>
             <div className="my-4 p-4 bg-white rounded-lg shadow-md">
@@ -32,8 +62,8 @@ const PendingApprovalView = ({ contacts, fetchContacts }) => {
                     <div className="p-4 bg-slate-800 text-white flex justify-between items-center">
                         <p>{selectedPending.length} item(s) selected</p>
                         <div className="flex gap-2">
-                            <button className="px-3 py-1.5 text-xs font-medium bg-green-600 rounded-lg hover:bg-green-700">Approve Selected</button>
-                            <button className="px-3 py-1.5 text-xs font-medium bg-red-600 rounded-lg hover:bg-red-700">Reject Selected</button>
+                            <button onClick={handleBulkApprove} className="px-3 py-1.5 text-xs font-medium bg-green-600 rounded-lg hover:bg-green-700">Approve Selected</button>
+                            <button onClick={handleBulkReject} className="px-3 py-1.5 text-xs font-medium bg-red-600 rounded-lg hover:bg-red-700">Reject Selected</button>
                         </div>
                     </div>
                 )}
@@ -59,7 +89,7 @@ const PendingApprovalView = ({ contacts, fetchContacts }) => {
                                 <td className="px-6 py-4">{contact.added_by_user_name}</td>
                                 <td className="px-6 py-4 text-right space-x-2">
                                     <button onClick={() => approveContact(contact.contact_id)} className="px-3 py-1 text-xs font-medium bg-green-600 rounded-md hover:bg-green-700 text-white">Approve</button>
-                                    <button className="px-3 py-1 text-xs font-medium bg-red-600 rounded-md hover:bg-red-700 text-white">Reject</button>
+                                    <button onClick={() => rejectContact(contact.contact_id)} className="px-3 py-1 text-xs font-medium bg-red-600 rounded-md hover:bg-red-700 text-white">Reject</button>
                                 </td>
                             </tr>
                         ))}

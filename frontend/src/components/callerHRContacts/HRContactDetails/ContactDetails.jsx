@@ -47,6 +47,12 @@ const ContactDetails = ({ selectedContact }) => {
         <MetadataRow label="Source">
           <span className="text-slate-700">{selectedContact.source}</span>
         </MetadataRow>
+        <MetadataRow label="Tags">
+          <span className="text-slate-700">{selectedContact.tags || "None"}</span>
+        </MetadataRow>
+        <MetadataRow label="Past Engagement">
+          <span className="text-slate-700">{selectedContact.past_engagement || "None"}</span>
+        </MetadataRow>
         <MetadataRow label="Added By">
           <span className="text-slate-700">{selectedContact.added_by_user_name}</span>
         </MetadataRow>

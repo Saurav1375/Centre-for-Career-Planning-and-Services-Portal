@@ -2,7 +2,8 @@ import {
   getCallerStats,
   getRecentCallLogs,
   getUpcomingFollowUps,
-  getAssignedHRContacts
+  getAssignedHRContacts,
+  getTodaysFollowUps
 } from "../models/dashboard.model.js";
 
 import {
@@ -13,17 +14,21 @@ import {
   getActionItems
 } from "../models/adminDashboard.model.js";
 
+import pool from "../config/db.js";
+
 export const getCallerDashboard = async (req, res) => {
   try {
     const callerId = req.user.user_id; // from auth middleware
     // console.log("Caller ID:", callerId);
 
     // Fetch data in parallel
-    const [stats, recentLogs, followUps, assignedHR] = await Promise.all([
+    const [stats, recentLogs, followUps, assignedHR, todaysFollowUps, topCallers] = await Promise.all([
       getCallerStats(callerId),
       getRecentCallLogs(callerId),
       getUpcomingFollowUps(callerId),
       getAssignedHRContacts(callerId),
+      getTodaysFollowUps(callerId),
+      getTopCallers()
     ]);
 
     res.json({
@@ -33,6 +38,8 @@ export const getCallerDashboard = async (req, res) => {
         recent_call_logs: recentLogs,
         upcoming_follow_ups: followUps,
         assigned_hr_contacts: assignedHR,
+        todays_follow_ups: todaysFollowUps,
+        top_callers: topCallers,
       },
     });
   } catch (err) {
@@ -46,10 +53,16 @@ export const getCallerDashboard = async (req, res) => {
 
 export const getAdminDashboard = async (req, res) => {
   try {
-    const stats = await getStats();
-    const weeklyData = await getWeeklyCallActivity();
-    const recentActivity = await getRecentActivity();
-    const topCallers = await getTopCallers();
+    const { userId, weekOffset } = req.query;
+    const offset = weekOffset ? parseInt(weekOffset, 10) : 0;
+    
+    // Also fetch all callers to populate the dropdown in the frontend
+    const [callersRows] = await pool.query('SELECT user_id, full_name, email FROM users WHERE role = "caller"');
+
+    const stats = await getStats(userId, offset);
+    const weeklyData = await getWeeklyCallActivity(userId, offset);
+    const recentActivity = await getRecentActivity(userId);
+    const topCallers = await getTopCallers(offset);
     const actionItems = await getActionItems();
 
     const weeklyCallActivity = {
@@ -75,7 +88,8 @@ export const getAdminDashboard = async (req, res) => {
           { id: 1, text: "New Users pending approval", count: actionItems.new_users, icon: "UserPlus", color: "yellow" },
           { id: 2, text: "HR Contacts pending approval", count: actionItems.pending_contacts, icon: "ClipboardList", color: "blue" },
           { id: 3, text: "Follow-ups are overdue", count: actionItems.overdue_followups, icon: "Clock", color: "red" },
-        ]
+        ],
+        callers: callersRows
       }
     });
 

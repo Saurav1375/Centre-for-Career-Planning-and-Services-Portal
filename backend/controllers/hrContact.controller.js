@@ -1,6 +1,7 @@
 import HRContact from '../models/hrContact.model.js';
-import { exportToCSV } from '../utils/exportCSV.js'; // Utility function for CSV export
-import { sendNewHRAddedEmail } from '../utils/emails.js';
+import { exportToCSV } from '../utils/exportCSV.js';
+import { createNotification } from '../utils/notifications.js';
+import pool from '../config/db.js';
 
 // CREATE a new HR contact
 export const createHRContact = async (req, res) => {
@@ -9,7 +10,17 @@ export const createHRContact = async (req, res) => {
     const contact = { ...req.body, added_by_user_id };
     const newContact = await HRContact.createHRContact(contact);
     res.status(201).json({ success: true, data: newContact });
-    await sendNewHRAddedEmail("umaputkarsh50201@gmail.com", req.user.full_name, newContact.company_name);
+    
+    // Notify all admins
+    const [admins] = await pool.query('SELECT user_id FROM users WHERE role = "Admin"');
+    for (const admin of admins) {
+      await createNotification(
+        admin.user_id,
+        "New HR Contact Added",
+        `${req.user.full_name} added a new HR contact for ${newContact.company_name}. Please review and approve.`,
+        "approval"
+      );
+    }
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -47,6 +58,30 @@ export const updateHRContact = async (req, res) => {
     res.json({ success: true, data: updatedContact });
   } catch (error) {
     console.error(error.message);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+// Request Deletion of HR Contact
+export const requestHRDeletion = async (req, res) => {
+  try {
+    const updatedContact = await HRContact.requestDeletion(req.params.id);
+    if (!updatedContact) return res.status(404).json({ success: false, message: "Not Found" });
+    
+    // Notify all admins and moderators
+    const [admins] = await pool.query('SELECT user_id FROM users WHERE role IN ("admin", "moderator")');
+    for (const admin of admins) {
+      await createNotification(
+        admin.user_id,
+        "HR Contact Deletion Request",
+        `${req.user.full_name} requested deletion of HR contact ${updatedContact.full_name} from ${updatedContact.company_name || 'a company'}.`,
+        "system"
+      );
+    }
+    
+    res.json({ success: true, data: updatedContact });
+  } catch (error) {
+    console.error("Error requesting HR deletion:", error.message);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };

@@ -5,11 +5,12 @@ const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
     // A single state object to hold all form data
     const [formData, setFormData] = useState({
         call_mode: "phone",
-        call_outcome: "connected",
+        call_outcome: "spoken",
+        hiring_tag: "neutral",
         contact_id: hr.contact_id,
         conversation_summary: "",
         remarks: "",
-        next_follow_up_date: null,
+        next_follow_up_date: "",
         call_timestamp: new Date().toISOString().slice(0, 16),
         recruitment_cycle: "2025-26"
     });
@@ -96,7 +97,7 @@ const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
                                     htmlFor="call_outcome"
                                     className="block text-sm font-semibold text-gray-700 mb-1"
                                 >
-                                    Call Outcome
+                                    Call Outcome <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                     id="call_outcome"
@@ -104,17 +105,40 @@ const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
                                     value={formData.call_outcome}
                                     onChange={handleChange}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                                    required
                                 >
-                                    <option value="connected">Connected</option>
-                                    <option value="not_reachable">Not Reachable</option>
-                                    <option value="follow_up">Follow-up Needed</option>
+                                    <option value="spoken">Spoken</option>
+                                    <option value="didnt pick">Didn't Pick</option>
+                                    <option value="not reachable">Not Reachable</option>
+                                    <option value="switch off">Switch Off</option>
+                                </select>
+                            </div>
+
+                            {/* Hiring Tag Dropdown */}
+                            <div className="md:col-span-2">
+                                <label
+                                    htmlFor="hiring_tag"
+                                    className="block text-sm font-semibold text-gray-700 mb-1"
+                                >
+                                    Hiring Tag <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    id="hiring_tag"
+                                    name="hiring_tag"
+                                    value={formData.hiring_tag}
+                                    onChange={handleChange}
+                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                                    required
+                                >
+                                    <option value="confirmed">Confirmed</option>
                                     <option value="positive">Positive</option>
                                     <option value="negative">Negative</option>
+                                    <option value="neutral">Neutral</option>
                                 </select>
                             </div>
 
                             {/* --- CONDITIONAL FOLLOW-UP DATE FIELD --- */}
-                            {formData.call_outcome === "follow_up" && (
+                            {(formData.call_outcome === "spoken" && formData.hiring_tag !== "confirmed" && formData.hiring_tag !== "negative") && (
                                 <div className="md:col-span-2">
                                     <label
                                         htmlFor="next_follow_up_date"
@@ -134,10 +158,9 @@ const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
                             )}
 
 
-                            {/* Conversation Summary Textarea */}
                             <div className="md:col-span-2">
                                 <label htmlFor="conversation_summary" className="block text-sm font-semibold text-gray-700 mb-1">
-                                    Conversation Summary
+                                    Conversation Summary <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
                                     id="conversation_summary"
@@ -147,6 +170,7 @@ const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
                                     onChange={handleChange}
                                     placeholder="Enter your raw notes here..."
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                                    required
                                 ></textarea>
                             </div>
 

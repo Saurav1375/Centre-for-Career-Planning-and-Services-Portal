@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 
-const CallersList = ({ callers, selectedCaller, setSelectedCaller, callerSearchTerm, setCallerSearchTerm, mode, setMode }) => {
+const CallersList = ({ callers, selectedCaller, setSelectedCaller, callerSearchTerm, setCallerSearchTerm, callerBranchFilter, setCallerBranchFilter, mode, setMode }) => {
     const filteredCallers = callers.filter(caller =>
         caller.full_name.toLowerCase().includes(callerSearchTerm.toLowerCase())
     );
@@ -8,7 +8,7 @@ const CallersList = ({ callers, selectedCaller, setSelectedCaller, callerSearchT
     return (
         <div className="lg:col-span-1 bg-white rounded-lg shadow-md p-4 h-fit">
             <h3 className="font-bold text-slate-800 px-2 mb-2">Student Callers</h3>
-            <div className="px-2 mb-3">
+            <div className="px-2 mb-3 space-y-2">
                 <input
                     type="search"
                     value={callerSearchTerm}

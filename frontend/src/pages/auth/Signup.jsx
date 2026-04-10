@@ -23,7 +23,7 @@ function Signup() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: '',
+    branch: '',
   });
   const { loading, signup } = useSignup();
   const [showPassword, setShowPassword] = useState(false);
@@ -116,19 +116,23 @@ function Signup() {
               >{showPassword ? <EyeClosed /> : <EyeOpen />}</button>
             </div>
           </div>
-          {/* Role Select */}
+          {/* Branch Select */}
           <div>
-            <label className="block mb-1 text-sm font-semibold text-gray-800">Select Role</label>
+            <label className="block mb-1 text-sm font-semibold text-gray-800">Select Branch</label>
             <select
-              value={inputs.role}
-              onChange={e => handleChange('role', e.target.value)}
+              value={inputs.branch}
+              onChange={e => handleChange('branch', e.target.value)}
               className="w-full border border-gray-300 focus:border-emerald-500 rounded-lg px-3 py-2 bg-gray-50 focus:bg-white transition placeholder-gray-400"
               required
             >
-              <option value="">Choose Role</option>
-              <option value="caller">caller</option>
-              {/* <option value="recruiter">Recruiter</option> */}
-              <option value="admin">admin</option>
+              <option value="">Choose Branch</option>
+              <option value="CSE">CSE</option>
+              <option value="DSAI">DSAI</option>
+              <option value="ECE">ECE</option>
+              <option value="EE">EE</option>
+              <option value="ME">ME</option>
+              <option value="MT">MT</option>
+              <option value="MSME">MSME</option>
             </select>
           </div>
           {/* Submit */}

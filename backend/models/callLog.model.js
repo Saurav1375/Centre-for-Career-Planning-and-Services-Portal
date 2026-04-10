@@ -1,18 +1,23 @@
-import pool from "../config/postgredb.js";
+import pool from "../config/db.js";
+import crypto from "crypto";
 
 const CallLog = {
   // Create a new log
-  async createLog({ contact_id, caller_id, call_mode, call_outcome, duration, conversation_summary, next_follow_up_date, remarks, admin_comments, recruitment_cycle }) {
+  async createLog({ contact_id, caller_id, call_mode, call_outcome, hiring_tag, duration, conversation_summary, next_follow_up_date, remarks, admin_comments, recruitment_cycle }) {
+    if (!contact_id || !caller_id || !call_mode || !call_outcome || !hiring_tag || !duration || !conversation_summary || !next_follow_up_date || !recruitment_cycle) {
+        throw new Error("All call log fields are mandatory.");
+    }
+    const log_id = crypto.randomUUID();
     const query = `
       INSERT INTO call_logs 
-        (contact_id, caller_id, call_mode, call_outcome, duration, conversation_summary, next_follow_up_date, remarks, admin_comments, recruitment_cycle)
+        (log_id, contact_id, caller_id, call_mode, call_outcome, hiring_tag, duration, conversation_summary, next_follow_up_date, remarks, admin_comments, recruitment_cycle)
       VALUES 
-        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      RETURNING *;
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
-    const values = [contact_id, caller_id, call_mode, call_outcome, duration, conversation_summary, next_follow_up_date, remarks, admin_comments, recruitment_cycle];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const values = [log_id, contact_id, caller_id, call_mode, call_outcome, hiring_tag, duration, conversation_summary, next_follow_up_date, remarks, admin_comments, recruitment_cycle];
+    await pool.query(query, values);
+    const [rows] = await pool.query(`SELECT * FROM call_logs WHERE log_id = ?`, [log_id]);
+    return rows[0];
   },
 
   // Get all logs
@@ -25,8 +30,8 @@ const CallLog = {
     LEFT JOIN companies c ON hc.company_id = c.company_id
     ORDER BY cl.call_timestamp DESC;
   `;
-  const result = await pool.query(query);
-  return result.rows;
+  const [rows] = await pool.query(query);
+  return rows;
 },
 
   // Get a single log by ID
@@ -37,22 +42,20 @@ const CallLog = {
     JOIN hr_contacts hc ON cl.contact_id = hc.contact_id
     JOIN users u ON cl.caller_id = u.user_id
     LEFT JOIN companies c ON hc.company_id = c.company_id
-    WHERE cl.log_id = $1;
+    WHERE cl.log_id = ?;
   `;
-  const result = await pool.query(query, [log_id]);
-  return result.rows[0];
+  const [rows] = await pool.query(query, [log_id]);
+  return rows[0];
 },
 
   // Update a log
   async updateLog(log_id, data) {
     const fields = [];
     const values = [];
-    let idx = 1;
 
     for (const [key, value] of Object.entries(data)) {
-      fields.push(`${key}=$${idx}`);
+      fields.push(`${key}=?`);
       values.push(value);
-      idx++;
     }
 
     if (fields.length === 0) return null;
@@ -60,24 +63,26 @@ const CallLog = {
     const query = `
       UPDATE call_logs
       SET ${fields.join(", ")}
-      WHERE log_id=$${idx}
-      RETURNING *;
+      WHERE log_id=?
     `;
     values.push(log_id);
 
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    await pool.query(query, values);
+    const [rows] = await pool.query(`SELECT * FROM call_logs WHERE log_id = ?`, [log_id]);
+    return rows[0];
   },
 
   // Delete a log
     async deleteLog(log_id) {
+        const [rows] = await pool.query(`SELECT * FROM call_logs WHERE log_id = ?`, [log_id]);
+        if(rows.length === 0) return null;
+        
         const query = `
         DELETE FROM call_logs
-        WHERE log_id = $1
-        RETURNING *;
+        WHERE log_id = ?
         `;
-        const result = await pool.query(query, [log_id]);
-        return result.rows[0];
+        await pool.query(query, [log_id]);
+        return rows[0];
     }
 
 };

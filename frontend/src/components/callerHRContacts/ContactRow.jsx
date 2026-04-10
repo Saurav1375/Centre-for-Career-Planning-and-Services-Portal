@@ -1,7 +1,7 @@
 import ContactActionsDropdown from './ContactActionsDropdown';
 import { useState } from 'react';
 
-const ContactRow = ({ contact, currentUser, setSelectedContact }) => {
+const ContactRow = ({ contact, currentUser, setSelectedContact, onAddCallLog }) => {
 
 
   return (
@@ -22,7 +22,15 @@ const ContactRow = ({ contact, currentUser, setSelectedContact }) => {
           <span className="font-semibold text-orange-600">Unassigned</span>
         )}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end items-center space-x-2">
+        {contact.assigned_to_user_id === currentUser && (
+          <button 
+            onClick={() => onAddCallLog(contact)}
+            className="text-white bg-teal-600 hover:bg-teal-700 px-3 py-1 rounded-md text-xs font-semibold shadow-sm transition-colors"
+          >
+            + Add Log
+          </button>
+        )}
         <ContactActionsDropdown contact={contact} currentUser={currentUser} setSelectedContact={setSelectedContact} />
       </td>
     </tr>

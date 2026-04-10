@@ -4,6 +4,8 @@ const ContactsTable = ({
     filteredContacts,
     filter,
     setFilter,
+    disciplineFilter,
+    setDisciplineFilter,
     searchTerm,
     setSearchTerm,
     selectedContactIds,
@@ -26,6 +28,20 @@ const ContactsTable = ({
                             <option value="unassigned">Show: Unassigned</option>
                             <option value="assigned">Show: Assigned</option>
                             <option value="all">Show: All Contacts</option>
+                        </select>
+                        <select
+                            value={disciplineFilter}
+                            onChange={(e) => setDisciplineFilter(e.target.value)}
+                            className="border border-slate-300 rounded-md p-2 text-sm focus:ring-teal-500 focus:border-teal-500"
+                        >
+                            <option value="">All Branches</option>
+                            <option value="CSE">CSE</option>
+                            <option value="DSAI">DSAI</option>
+                            <option value="ECE">ECE</option>
+                            <option value="EE">EE</option>
+                            <option value="ME">ME</option>
+                            <option value="MT">MT</option>
+                            <option value="MSME">MSME</option>
                         </select>
                         <input
                             type="search"

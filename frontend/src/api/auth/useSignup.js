@@ -5,8 +5,7 @@ import { useAppContext } from '../../context/AppContext';
 
 const useSignup = () => {
     const [loading, setLoading] = useState(false);
-    const { setTempUserId } = useAuthContext();
-    const { backendUrl, setShowVerifyEmail } = useAppContext();
+    const { backendUrl } = useAppContext();
 
     const signup = async ({ name, email, password, confirmPassword, role }) => {
         const success = handleInputError({ name, email, password, confirmPassword, role });
@@ -22,12 +21,7 @@ const useSignup = () => {
             })
             const data = await res.json();
             if (!res.ok) throw new Error(data.message);
-            //   localStorage.setItem('ccps-user',JSON.stringify(data));
-            //   setAuthUser(data);
-            // not setting authUser here because user is not verified yet
-            setTempUserId(data.userId);
-            setShowVerifyEmail(true);
-            toast.success("Verification email sent successfully!");
+            toast.success(data.autoApproved ? "Signup successful! You can now log in." : "Signup successful! Pending admin approval.");
         }
         catch (error) {
             toast.error(error.message);
