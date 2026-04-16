@@ -4,7 +4,7 @@ import crypto from "crypto";
 const CallLog = {
   // Create a new log
   async createLog({ contact_id, caller_id, call_mode, call_outcome, hiring_tag, duration, conversation_summary, next_follow_up_date, remarks, admin_comments, recruitment_cycle }) {
-    if (!contact_id || !caller_id || !call_mode || !call_outcome || !hiring_tag || !duration || !conversation_summary || !next_follow_up_date || !recruitment_cycle) {
+    if (!contact_id || !caller_id || !call_mode || !call_outcome || !conversation_summary) {
         throw new Error("All call log fields are mandatory.");
     }
     const log_id = crypto.randomUUID();
