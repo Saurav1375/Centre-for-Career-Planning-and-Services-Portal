@@ -2,7 +2,7 @@ import { useState } from "react";
 import { exportToCSV } from "../../utils/exportCSV.js";
 import ContactActionsDropdown from "./ContactActionsDropdown.jsx";
 
-const AllContactsView = ({ contacts, setSelectedContact, fetchContacts }) => {
+const AllContactsView = ({ contacts, setSelectedContact, fetchContacts, setContactToEdit }) => {
     const [selectedContacts, setSelectedContacts] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -60,7 +60,7 @@ const AllContactsView = ({ contacts, setSelectedContact, fetchContacts }) => {
                                 <td className="px-6 py-4">{contact.company_name}</td>
                                 <td className="px-6 py-4">{contact.assigned_to_user_name || "Unassigned"}</td>
                                 <td className="px-6 py-4 text-right">
-                                    <ContactActionsDropdown contact={contact} setSelectedContact={setSelectedContact} fetchContacts={fetchContacts} />
+                                    <ContactActionsDropdown contact={contact} setSelectedContact={setSelectedContact} fetchContacts={fetchContacts} setContactToEdit={setContactToEdit} />
                                 </td>
                             </tr>
                         ))}

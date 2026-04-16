@@ -1,41 +1,40 @@
 import { useState, useEffect } from 'react';
-import { createHRContact } from '../../api/liaisoningAPIs/hrContacts.js';
+import { updateHRContact } from '../../api/liaisoningAPIs/hrContacts.js';
 import { getAllCompanies } from '../../api/liaisoningAPIs/company.js';
 import AddCompanyForm from '../company/addCompanyForm.jsx';
 
-const AddHRContactForm = ({ setShowAddHRContactModal, fetchContacts }) => {
+const EditHRContactForm = ({ existingContact, setShowEditHRContactModal, fetchContacts }) => {
+    // Fill state with existing contact instead of empty strings
     const [formData, setFormData] = useState({
-        linkedin_profile: '',
-        full_name: '',
-        designation: '',
-        email: '',
-        status: 'active',
-        phone_1: '',
-        source: '',
-        notes: '',
-        tags: '',
-        past_engagement: '',
-        company_id: '',
-        discipline: '',
-        contact_type: ''
+        linkedin_profile: existingContact?.linkedin_profile || '',
+        full_name: existingContact?.full_name || '',
+        designation: existingContact?.designation || '',
+        email: existingContact?.email || '',
+        status: existingContact?.status || 'active',
+        phone_1: existingContact?.phone_1 || '',
+        source: existingContact?.source || '',
+        notes: existingContact?.notes || '',
+        tags: existingContact?.tags || '',
+        past_engagement: existingContact?.past_engagement || '',
+        company_id: existingContact?.company_id || '',
+        discipline: existingContact?.discipline || '',
+        contact_type: existingContact?.contact_type || ''
     });
 
     const [companies, setCompanies] = useState([]);
     const [showCompanyForm, setShowCompanyForm] = useState(false);
 
-
     useEffect(() => {
         const fetchCompanies = async () => {
             try {
                 const response = await getAllCompanies();
-                setCompanies(response.data); // assuming backend returns an array of companies
+                setCompanies(response.data); 
             } catch (error) {
                 console.error("Error fetching companies:", error);
             }
         };
         fetchCompanies();
     }, []);
-
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -53,41 +52,38 @@ const AddHRContactForm = ({ setShowAddHRContactModal, fetchContacts }) => {
         setFormData(prev => ({ ...prev, discipline: current.join(", ") }));
     };
 
-
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Submitting new contact:", formData);
-        createHRContact(formData)
+        
+        // ensure is_approved is sent properly based on backend needs
+        updateHRContact(existingContact.contact_id, { ...existingContact, ...formData })
             .then(response => {
-                console.log("Contact created successfully:", response.data);
-                fetchContacts(); // Refresh the contact list
-                setShowAddHRContactModal(false); // Close the modal
+                fetchContacts(); 
+                setShowEditHRContactModal(false); 
             })
             .catch(error => {
-                console.error("Error creating contact:", error);
+                console.error("Error updating contact:", error);
+                alert("Failed to update contact. " + error.message);
             });
     };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-                {/* Modal Header */}
                 <div className="p-5 border-b flex justify-between items-center">
                     <div>
-                        <h2 className="text-xl font-bold text-slate-800">Add New HR Contact</h2>
-                        <p className="text-sm text-slate-500">Enter the details of the new contact.</p>
+                        <h2 className="text-xl font-bold text-slate-800">Edit HR Contact</h2>
+                        <p className="text-sm text-slate-500">Update the details of the contact.</p>
                     </div>
-                    <button onClick={() => setShowAddHRContactModal(false)} className="p-2 rounded-full hover:bg-slate-100">
+                    <button onClick={() => setShowEditHRContactModal(false)} className="p-2 rounded-full hover:bg-slate-100">
                         <svg className="h-6 w-6 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                {/* Form Content */}
                 <div className="flex-1 overflow-y-auto p-6">
-                    <form id="hrContactForm" onSubmit={handleSubmit} className="space-y-6">
-                        {/* --- NEW: LinkedIn Profile Field --- */}
+                    <form id="hrEditContactForm" onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label htmlFor="linkedin_profile" className="block text-sm font-medium text-slate-700">LinkedIn Profile URL</label>
                             <input
@@ -112,9 +108,6 @@ const AddHRContactForm = ({ setShowAddHRContactModal, fetchContacts }) => {
                             </div>
                         </div>
 
-
-
-                        {/* Company Dropdown */}
                         <div>
                             <label className="block text-sm font-medium text-slate-700">Company</label>
                             <select
@@ -123,7 +116,7 @@ const AddHRContactForm = ({ setShowAddHRContactModal, fetchContacts }) => {
                                 onChange={(e) => {
                                     if (e.target.value === "add_new_company") {
                                         setShowCompanyForm(true);
-                                        setFormData(prev => ({ ...prev, company_id: "" })); // reset
+                                        setFormData(prev => ({ ...prev, company_id: "" })); 
                                     } else {
                                         handleChange(e);
                                     }
@@ -142,9 +135,6 @@ const AddHRContactForm = ({ setShowAddHRContactModal, fetchContacts }) => {
                                 </option>
                             </select>
                         </div>
-
-
-
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -210,26 +200,21 @@ const AddHRContactForm = ({ setShowAddHRContactModal, fetchContacts }) => {
                     </form>
                 </div>
 
-                {/* Modal Footer */}
                 <div className="p-5 border-t bg-slate-50 flex justify-end">
-                    <button type="button" onClick={() => setShowAddHRContactModal(false)} className="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 mr-3">Cancel</button>
-                    <button type="submit" form="hrContactForm" className="px-5 py-2.5 text-sm font-medium text-white bg-teal-600 rounded-lg shadow-sm hover:bg-teal-700">Submit for Approval</button>
+                    <button type="button" onClick={() => setShowEditHRContactModal(false)} className="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 mr-3">Cancel</button>
+                    <button type="submit" form="hrEditContactForm" className="px-5 py-2.5 text-sm font-medium text-white bg-teal-600 rounded-lg shadow-sm hover:bg-teal-700">Save Changes</button>
                 </div>
             </div>
 
-            {/* --- NEW: Add Company Form Modal --- */}
             {showCompanyForm && (
                 <AddCompanyForm
                     setShowCompanyForm={setShowCompanyForm}
                     refreshCompanies={() => {
-                        // re-fetch after a new company is added
                         getAllCompanies().then(res => setCompanies(res.data));
                     }}
                 />
             )}
-
-
         </div>
     );
 };
-export default AddHRContactForm;
+export default EditHRContactForm;

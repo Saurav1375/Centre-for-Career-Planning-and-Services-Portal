@@ -3,6 +3,7 @@ import { Plus, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import AddHRContactForm from '../../components/callerHRContacts/AddHRContactForm.jsx';
+import EditHRContactForm from '../../components/callerHRContacts/EditHRContactForm.jsx';
 import HRContactDetailsPage from '../../components/callerHRContacts/HRContactDetails/HRContactDetailsPage.jsx';
 import AllContactsView from '../../components/AdminHRContacts/AllContactsView.jsx';
 import PendingApprovalView from '../../components/AdminHRContacts/PendingApprovalView.jsx';
@@ -13,6 +14,7 @@ const AdminHRContactsRepository = () => {
     const [contacts, setContacts] = useState([]);
     const [showAddHRContactModal, setShowAddHRContactModal] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
+    const [contactToEdit, setContactToEdit] = useState(null);
     const navigate = useNavigate();
 
     const fetchContacts = async () => {
@@ -85,10 +87,10 @@ const AdminHRContactsRepository = () => {
                 {/* Tab Content */}
                 <div className="mt-6">
                     {activeTab === "all" && (
-                        <AllContactsView contacts={contacts} setSelectedContact={setSelectedContact} fetchContacts={fetchContacts} />
+                        <AllContactsView contacts={contacts} setSelectedContact={setSelectedContact} fetchContacts={fetchContacts} setContactToEdit={setContactToEdit} />
                     )}
                     {activeTab === "pending" && (
-                        <PendingApprovalView contacts={contacts} fetchContacts={fetchContacts} />
+                        <PendingApprovalView contacts={contacts} fetchContacts={fetchContacts} setContactToEdit={setContactToEdit} />
                     )}
                 </div>
             </main>
@@ -96,6 +98,10 @@ const AdminHRContactsRepository = () => {
             {/* Modals */}
             {showAddHRContactModal && (
                 <AddHRContactForm setShowAddHRContactModal={setShowAddHRContactModal} fetchContacts={fetchContacts} />
+            )}
+
+            {contactToEdit && (
+                <EditHRContactForm existingContact={contactToEdit} setShowEditHRContactModal={(val) => {if(!val) setContactToEdit(null)}} fetchContacts={fetchContacts} />
             )}
 
             {selectedContact && (

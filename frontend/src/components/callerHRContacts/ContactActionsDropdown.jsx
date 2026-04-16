@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { MoreVertical, Eye, Edit, Trash2 } from 'lucide-react';
 import { requestHRDeletion } from '../../api/liaisoningAPIs/hrContacts.js';
 
-const ContactActionsDropdown = ({ contact, currentUser, setSelectedContact }) => {
+const ContactActionsDropdown = ({ contact, currentUser, setSelectedContact, setContactToEdit }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const isAssignedToCurrentUser = contact.assigned_to_user_id === currentUser;
@@ -26,7 +26,7 @@ const ContactActionsDropdown = ({ contact, currentUser, setSelectedContact }) =>
   };
 
   const handleEdit = () => {
-    console.log("Editing contact:", contact.full_name);
+    setContactToEdit(contact);
     setIsOpen(false);
   };
 

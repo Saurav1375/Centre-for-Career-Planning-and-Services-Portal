@@ -33,20 +33,23 @@ const industries = ["Software", "Finance", "Healthcare", "E-commerce", "AI/ML", 
 
         // 2. Callers
         const callerIds = [];
+        const branches = ["CSE", "DSAI", "ECE", "EE", "ME", "MT", "MSME"];
+        
         for (let i = 0; i < 12; i++) {
             const uuid = crypto.randomUUID();
             const callerName = `${names[i % names.length]} ${lastNames[i % lastNames.length]}${i}`;
             const email = `caller${i + 1}@iitbhilai.ac.in`;
+            const randomBranch = branches[i % branches.length];
 
             await pool.query(
-                `INSERT INTO users (user_id, full_name, email, role, password_hash, is_approved)
-                 VALUES (?, ?, ?, ?, ?, ?)`,
-                [uuid, callerName, email, "caller", defaultPassword, true]
+                `INSERT INTO users (user_id, full_name, email, role, password_hash, is_approved, branch)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [uuid, callerName, email, "caller", defaultPassword, true, randomBranch]
             );
 
             callerIds.push(uuid);
         }
-        console.log("✅ Callers created");
+        console.log("✅ Callers created with branches");
 
         // 3. Companies
         const companyIds = [];
@@ -72,10 +75,14 @@ const industries = ["Software", "Finance", "Healthcare", "E-commerce", "AI/ML", 
 
         // 4. HR Contacts
         for (let i = 0; i < 12; i++) {
+            // Assign 1 or 2 random disciplines to the HR
+            const hrDisciplines = [branches[i % branches.length]];
+            if (i % 2 === 0) hrDisciplines.push(branches[(i + 1) % branches.length]);
+
             await pool.query(
                 `INSERT INTO hr_contacts 
-                (contact_id, full_name, company_id, designation, email, phone_1, status, added_by_user_id, assigned_to_user_id, is_approved)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (contact_id, full_name, company_id, designation, email, phone_1, phone_2, linkedin_profile, source, status, notes, tags, discipline, contact_type, past_engagement, added_by_user_id, assigned_to_user_id, is_approved)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     crypto.randomUUID(),
                     `HR ${names[(i + 2) % names.length]}`,
@@ -83,9 +90,17 @@ const industries = ["Software", "Finance", "Healthcare", "E-commerce", "AI/ML", 
                     "Talent Acquisition",
                     `hr${i + 1}@company${i + 1}.com`,
                     `9${Math.floor(100000000 + Math.random() * 900000000)}`,
+                    `8${Math.floor(100000000 + Math.random() * 900000000)}`,
+                    `https://linkedin.com/in/hr${i+1}`,
+                    "LinkedIn",
                     "New",
+                    "Looking for software engineers.",
+                    "Tech, Immediate Hiring, Priority",
+                    hrDisciplines.join(", "),
+                    "Primary",
+                    "Attended placement drive in 2024",
                     adminId,
-                    callerIds[i],
+                    null, // Remove all assignment
                     true
                 ]
             );

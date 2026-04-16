@@ -1,7 +1,7 @@
 import ContactActionsDropdown from './ContactActionsDropdown';
 import { useState } from 'react';
 
-const ContactRow = ({ contact, currentUser, setSelectedContact, onAddCallLog }) => {
+const ContactRow = ({ contact, currentUser, setSelectedContact, setContactToEdit, onAddCallLog }) => {
 
 
   return (
@@ -31,7 +31,7 @@ const ContactRow = ({ contact, currentUser, setSelectedContact, onAddCallLog }) 
             + Add Log
           </button>
         )}
-        <ContactActionsDropdown contact={contact} currentUser={currentUser} setSelectedContact={setSelectedContact} />
+        <ContactActionsDropdown contact={contact} currentUser={currentUser} setSelectedContact={setSelectedContact} setContactToEdit={setContactToEdit} />
       </td>
     </tr>
   );

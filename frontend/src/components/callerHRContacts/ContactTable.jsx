@@ -1,7 +1,7 @@
 import ContactRow from './ContactRow';
 
 
-const ContactsTable = ({ contacts, currentUser, setSelectedContact, onAddCallLog }) => {
+const ContactsTable = ({ contacts, currentUser, setSelectedContact, setContactToEdit, onAddCallLog }) => {
 
 
   return (
@@ -27,6 +27,7 @@ const ContactsTable = ({ contacts, currentUser, setSelectedContact, onAddCallLog
                   contact={contact} 
                   currentUser={currentUser} 
                   setSelectedContact={setSelectedContact}
+                  setContactToEdit={setContactToEdit}
                   onAddCallLog={onAddCallLog}
                 />
               ))

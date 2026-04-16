@@ -53,7 +53,25 @@ export const getHRContactById = async (req, res) => {
 // UPDATE an HR contact
 export const updateHRContact = async (req, res) => {
   try {
-    const updatedContact = await HRContact.updateHRContact(req.params.id, req.body);
+    const isCaller = req.user.role.toLowerCase() === 'caller';
+    const contactData = { ...req.body };
+
+    if (isCaller) {
+      contactData.is_approved = false; // Forces re-approval
+      
+      // Notify admins
+      const [admins] = await pool.query('SELECT user_id FROM users WHERE role IN ("admin", "moderator")');
+      for (const admin of admins) {
+        await createNotification(
+          admin.user_id,
+          "HR Contact Modified",
+          `${req.user.full_name} modified HR contact ${contactData.full_name}. Please review and approve.`,
+          "approval"
+        );
+      }
+    }
+
+    const updatedContact = await HRContact.updateHRContact(req.params.id, contactData);
     if (!updatedContact) return res.status(404).json({ success: false, message: "Not Found" });
     res.json({ success: true, data: updatedContact });
   } catch (error) {

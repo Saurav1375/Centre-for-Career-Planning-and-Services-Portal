@@ -48,7 +48,7 @@ const ContactAssignmentPage = () => {
         }
 
         if (sharedBranchFilter) {
-            result = result.filter(c => c.discipline === sharedBranchFilter);
+            result = result.filter(c => c.discipline && c.discipline.includes(sharedBranchFilter));
         }
 
         if (searchTerm) {
@@ -109,7 +109,7 @@ const ContactAssignmentPage = () => {
                 <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Callers List */}
                     <CallersList
-                        callers={callers.filter(c => !sharedBranchFilter || c.branch === sharedBranchFilter)}
+                        callers={callers.filter(c => !sharedBranchFilter || (c.branch && c.branch.includes(sharedBranchFilter)))}
                         selectedCaller={selectedCaller}
                         setSelectedCaller={setSelectedCaller}
                         callerSearchTerm={callerSearchTerm}

@@ -6,6 +6,7 @@ import FiltersBar from '../../components/callerHRContacts/FiltersBar.jsx';
 import ContactsTable from '../../components/callerHRContacts/ContactTable.jsx';
 import Sidebar from '../../components/Sidebar.jsx';
 import AddHRContactForm from '../../components/callerHRContacts/AddHRContactForm.jsx';
+import EditHRContactForm from '../../components/callerHRContacts/EditHRContactForm.jsx';
 import HRContactDetailsPage from '../../components/callerHRContacts/HRContactDetails/HRContactDetailsPage.jsx';
 import LogForm from '../../components/callerDashboard/LogForm.jsx';
 
@@ -22,6 +23,7 @@ const HRContactsPage = () => {
   const [selectedHRForLog, setSelectedHRForLog] = useState(null);
 
   const [selectedContact, setSelectedContact] = useState(null);
+  const [contactToEdit, setContactToEdit] = useState(null);
 
     const fetchContacts = async () => {
     try {
@@ -81,6 +83,7 @@ const HRContactsPage = () => {
           contacts={filteredContacts} 
           currentUser={CURRENT_USER_ID} 
           setSelectedContact={setSelectedContact}
+          setContactToEdit={setContactToEdit}
           onAddCallLog={(contact) => {
             setSelectedHRForLog(contact);
             setShowLogForm(true);
@@ -92,6 +95,10 @@ const HRContactsPage = () => {
 
      { showAddHRContactModal && (
     <AddHRContactForm setShowAddHRContactModal={setShowAddHRContactModal} fetchContacts={fetchContacts} />
+  )}
+
+     { contactToEdit && (
+    <EditHRContactForm existingContact={contactToEdit} setShowEditHRContactModal={(val) => {if(!val) setContactToEdit(null)}} fetchContacts={fetchContacts} />
   )}
 
 

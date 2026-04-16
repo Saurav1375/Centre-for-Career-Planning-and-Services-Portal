@@ -7,8 +7,8 @@ const useSignup = () => {
     const [loading, setLoading] = useState(false);
     const { backendUrl } = useAppContext();
 
-    const signup = async ({ name, email, password, confirmPassword, role }) => {
-        const success = handleInputError({ name, email, password, confirmPassword, role });
+    const signup = async ({ name, email, password, confirmPassword, branch, role }) => {
+        const success = handleInputError({ name, email, password, confirmPassword, branch });
         if (!success) return;
         setLoading(true);
         try {
@@ -17,7 +17,7 @@ const useSignup = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, email, password, role })
+                body: JSON.stringify({ name, email, password, branch, role })
             })
             const data = await res.json();
             if (!res.ok) throw new Error(data.message);
@@ -33,8 +33,8 @@ const useSignup = () => {
     return { loading, signup };
 }
 
-function handleInputError({ name, email, password, confirmPassword, role }) {
-    if (!name || !email || !password || !confirmPassword || !role) {
+function handleInputError({ name, email, password, confirmPassword, branch }) {
+    if (!name || !email || !password || !confirmPassword || !branch) {
         toast.error('All fields are required');
         return false;
     }

@@ -7,6 +7,7 @@ const CallersStats = {
         u.user_id AS caller_id,
         u.full_name,
         u.email,
+        u.branch,
 
         COALESCE(ac.total_contacts_assigned, 0) AS total_contacts_assigned,
         COALESCE(ad.total_contacts_added, 0) AS total_contacts_added,
@@ -57,6 +58,7 @@ const CallersStats = {
       caller_id: r.caller_id,
       full_name: r.full_name,
       email: r.email,
+      branch: r.branch || '',
       total_contacts_assigned: Number(r.total_contacts_assigned) || 0,
       total_contacts_added: Number(r.total_contacts_added) || 0,
       approved_contacts_added: Number(r.approved_contacts_added) || 0,

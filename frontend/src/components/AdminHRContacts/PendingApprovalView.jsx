@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toggleHRContactApproval, deleteHRContact } from '../../api/liaisoningAPIs/hrContacts.js';
 
-const PendingApprovalView = ({ contacts, fetchContacts }) => {
+const PendingApprovalView = ({ contacts, fetchContacts, setContactToEdit }) => {
     const [selectedPending, setSelectedPending] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -89,6 +89,7 @@ const PendingApprovalView = ({ contacts, fetchContacts }) => {
                                 <td className="px-6 py-4">{contact.added_by_user_name}</td>
                                 <td className="px-6 py-4 text-right space-x-2">
                                     <button onClick={() => approveContact(contact.contact_id)} className="px-3 py-1 text-xs font-medium bg-green-600 rounded-md hover:bg-green-700 text-white">Approve</button>
+                                    <button onClick={() => setContactToEdit(contact)} className="px-3 py-1 text-xs font-medium bg-blue-600 rounded-md hover:bg-blue-700 text-white">Edit</button>
                                     <button onClick={() => rejectContact(contact.contact_id)} className="px-3 py-1 text-xs font-medium bg-red-600 rounded-md hover:bg-red-700 text-white">Reject</button>
                                 </td>
                             </tr>

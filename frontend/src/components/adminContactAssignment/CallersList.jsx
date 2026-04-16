@@ -40,7 +40,7 @@ const CallersList = ({ callers, selectedCaller, setSelectedCaller, callerSearchT
                                     </div>
                                     <div>
                                         <p className="font-semibold text-sm text-slate-800">{caller.full_name}</p>
-                                        <p className="text-xs text-slate-500">{caller.total_contacts_assigned} Contacts Assigned</p>
+                                        <p className="text-xs text-slate-500">{caller.total_contacts_assigned} Contacts · <span className="font-medium text-teal-600">{caller.branch || 'N/A'}</span></p>
                                     </div>
                                 </div>
                                 {selectedCaller?.caller_id === caller.caller_id && <ChevronRight className="h-5 w-5 text-teal-500" />}
