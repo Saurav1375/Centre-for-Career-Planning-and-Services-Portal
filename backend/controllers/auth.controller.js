@@ -102,6 +102,7 @@ export const login = async (req, res) => {
             name: user.full_name,
             email: user.email,
             role: user.role,
+            branch: user.branch || '',
         };
 
         res.status(200).json({ success: true, userData, token });
