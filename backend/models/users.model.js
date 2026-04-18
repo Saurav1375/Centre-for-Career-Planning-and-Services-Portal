@@ -3,7 +3,7 @@ import pool from "../config/db.js";
 const Users = {
   // Get users with optional filters
   async getUsers({ status, role }) {
-    let query = `SELECT user_id, full_name, email, role, is_approved, is_verified, created_at, last_active_at
+    let query = `SELECT user_id, full_name, email, role, branch, is_approved, is_verified, created_at, last_active_at
                  FROM users WHERE 1=1`;
     const values = [];
 

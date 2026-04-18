@@ -73,6 +73,7 @@ const PendingUsersTable = ({ users, fetchData }) => {
                         </th>
                         <th scope="col" className="px-6 py-3">Name</th>
                         <th scope="col" className="px-6 py-3">Requested Role</th>
+                    <th scope="col" className="px-6 py-3">Branch</th>
                         <th scope="col" className="px-6 py-3 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -92,6 +93,13 @@ const PendingUsersTable = ({ users, fetchData }) => {
                                 </div>
                             </td>
                             <td className="px-6 py-4">{user.role}</td>
+                        <td className="px-6 py-4">
+                            {user.branch ? (
+                                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-teal-100 text-teal-700">{user.branch}</span>
+                            ) : (
+                                <span className="text-xs text-slate-400">—</span>
+                            )}
+                        </td>
                             <td className="px-6 py-4 text-right">
                                 <div className="flex items-center justify-end gap-2">
                                     <button onClick={() => handleApproval(user.user_id, false)} className="p-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 flex items-center gap-1.5">

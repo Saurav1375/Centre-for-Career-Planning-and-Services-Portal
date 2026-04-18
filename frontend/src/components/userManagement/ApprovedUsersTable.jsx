@@ -64,6 +64,7 @@ const ApprovedUsersTable = ({ users, fetchData, setSelectedContactToSms }) => {
                     </th>
                     <th scope="col" className="px-6 py-3">Name</th>
                     <th scope="col" className="px-6 py-3">Role</th>
+                    <th scope="col" className="px-6 py-3">Branch</th>
                     <th scope="col" className="px-6 py-3 text-center">Contacts Assigned</th>
                     <th scope="col" className="px-6 py-3">Last Active</th>
                     <th scope="col" className="px-6 py-3 text-right">Actions</th>
@@ -85,6 +86,13 @@ const ApprovedUsersTable = ({ users, fetchData, setSelectedContactToSms }) => {
                             </div>
                         </td>
                         <td className="px-6 py-4">{user.role}</td>
+                        <td className="px-6 py-4">
+                            {user.branch ? (
+                                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-teal-100 text-teal-700">{user.branch}</span>
+                            ) : (
+                                <span className="text-xs text-slate-400">—</span>
+                            )}
+                        </td>
                         <td className="px-6 py-4 font-medium text-center">{user.contactsAssigned}</td>
                         <td className="px-6 py-4">{formatLastActive(user.last_active_at)}</td>
                         <td className="px-6 py-4 text-right">
