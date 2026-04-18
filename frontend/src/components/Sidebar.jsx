@@ -60,6 +60,9 @@ const Sidebar = () => {
           <NavLink to="/caller-call-logs" className={navLinkClass}>
             Caller Call Logs
           </NavLink>
+          <NavLink to="/caller-profile" className={navLinkClass}>
+            My Profile
+          </NavLink>
         </>
       )}
 

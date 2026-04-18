@@ -39,6 +39,7 @@ import CallerDashboard from './pages/student/CallerDashboard';
 
 import CallerHRContacts from './pages/student/CallerHRContacts';
 import CallerCallLogs from './pages/student/CallerCallLogs';
+import CallerProfile from './pages/student/CallerProfile';
 
 //Admin
 import HRAssignment from './pages/admin/HRAssignment';
@@ -74,6 +75,7 @@ function App() {
         <Route path='/alumni' element={<Alumni />} />
         <Route path='/hr-contacts' element={<CallerHRContacts />} />
         <Route path='/caller-dashboard' element={<CallerDashboard />} />
+        <Route path='/caller-profile' element={<CallerProfile />} />
         <Route path='/caller-call-logs' element={<CallerCallLogs />} />
 
 
