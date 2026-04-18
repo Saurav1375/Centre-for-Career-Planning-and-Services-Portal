@@ -34,6 +34,13 @@ export const getCallerDashboard = async (req, res) => {
     res.json({
       success: true,
       data: {
+        profile: {
+          user_id: req.user.user_id,
+          full_name: req.user.full_name,
+          email: req.user.email,
+          role: req.user.role,
+          branch: req.user.branch || '',
+        },
         stats,
         recent_call_logs: recentLogs,
         upcoming_follow_ups: followUps,

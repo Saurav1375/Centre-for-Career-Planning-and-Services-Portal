@@ -38,9 +38,10 @@ const CallerProfile = () => {
     }
 
     const stats = data?.stats || {};
+    const profile = data?.profile || {};
     const topCallers = data?.top_callers || [];
-    const myRank = topCallers.findIndex(c => c.name === authUser?.name) + 1;
-    const initials = (authUser?.name || "??").split(" ").map(w => w[0]).join("").toUpperCase();
+    const myRank = topCallers.findIndex(c => c.name === profile.full_name) + 1;
+    const initials = (profile.full_name || "??").split(" ").map(w => w[0]).join("").toUpperCase();
 
     const statItems = [
         { label: "Contacts Assigned", value: stats.total_contacts || 0, icon: Users, color: "from-teal-500 to-teal-600" },
@@ -80,18 +81,18 @@ const CallerProfile = () => {
                     <div className="pt-16 pb-6 px-8">
                         <div className="flex flex-wrap items-start justify-between gap-4">
                             <div>
-                                <h2 className="text-2xl font-bold text-slate-900">{authUser?.name}</h2>
+                                <h2 className="text-2xl font-bold text-slate-900">{profile.full_name}</h2>
                                 <div className="flex flex-wrap items-center gap-3 mt-2">
                                     <span className="inline-flex items-center gap-1.5 text-sm text-slate-500">
-                                        <Mail className="h-4 w-4" /> {authUser?.email}
+                                        <Mail className="h-4 w-4" /> {profile.email}
                                     </span>
                                     <span className="inline-flex items-center gap-1.5 text-sm text-slate-500">
                                         <Shield className="h-4 w-4" />
-                                        <span className="capitalize">{authUser?.role}</span>
+                                        <span className="capitalize">{profile.role}</span>
                                     </span>
-                                    {authUser?.branch && (
+                                    {profile.branch && (
                                         <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 bg-teal-100 text-teal-700 rounded-full">
-                                            <GitBranch className="h-3.5 w-3.5" /> {authUser.branch}
+                                            <GitBranch className="h-3.5 w-3.5" /> {profile.branch}
                                         </span>
                                     )}
                                 </div>
@@ -112,7 +113,7 @@ const CallerProfile = () => {
                         {/* ID */}
                         <div className="mt-4 p-3 bg-slate-50 rounded-xl inline-block">
                             <p className="text-xs text-slate-400 font-medium">User ID</p>
-                            <p className="text-sm text-slate-600 font-mono">{authUser?._id}</p>
+                            <p className="text-sm text-slate-600 font-mono">{profile.user_id}</p>
                         </div>
                     </div>
                 </div>
@@ -191,10 +192,10 @@ const CallerProfile = () => {
                             </h3>
                             <div className="space-y-3">
                                 {[
-                                    { label: "Full Name", value: authUser?.name },
-                                    { label: "Email", value: authUser?.email },
-                                    { label: "Branch", value: authUser?.branch || "Not set" },
-                                    { label: "Role", value: authUser?.role, capitalize: true },
+                                    { label: "Full Name", value: profile.full_name },
+                                    { label: "Email", value: profile.email },
+                                    { label: "Branch", value: profile.branch || "Not set" },
+                                    { label: "Role", value: profile.role, capitalize: true },
                                 ].map(item => (
                                     <div key={item.label} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
                                         <span className="text-sm text-slate-500">{item.label}</span>
@@ -216,7 +217,7 @@ const CallerProfile = () => {
                                 <ul className="space-y-2">
                                     {topCallers.slice(0, 5).map((caller, idx) => {
                                         const medals = ['🥇', '🥈', '🥉'];
-                                        const isMe = caller.name === authUser?.name;
+                                        const isMe = caller.name === profile.full_name;
                                         return (
                                             <li key={caller.id} className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors ${isMe ? 'bg-teal-50 border border-teal-200' : 'hover:bg-slate-50'}`}>
                                                 <span className="w-7 text-center text-sm">
