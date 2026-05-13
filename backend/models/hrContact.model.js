@@ -46,6 +46,7 @@ async createHRContact(contact) {
     status,
     notes,
     tags,
+    past_engagement,
     added_by_user_id,
     assigned_to_user_id,
     is_approved,

@@ -7,6 +7,7 @@ const CallLog = {
     if (!contact_id || !caller_id || !call_mode || !call_outcome || !conversation_summary) {
         throw new Error("All call log fields are mandatory.");
     }
+    next_follow_up_date=next_follow_up_date || null;
     const log_id = crypto.randomUUID();
     const query = `
       INSERT INTO call_logs 
