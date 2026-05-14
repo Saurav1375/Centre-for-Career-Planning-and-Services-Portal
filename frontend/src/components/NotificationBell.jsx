@@ -74,14 +74,21 @@ const NotificationBell = () => {
         
         // Navigate to appropriate section based on type
         switch (notification.type) {
+            case 'hr_approval':
             case 'approval':
                 navigate('/admin/hr-contacts-repository');
                 break;
-            case 'reminder':
+            case 'user_approval':
+                navigate('/admin/user-management');
+                break;
+            case 'follow_up':
                 navigate('/caller-call-logs');
                 break;
+            case 'admin_message':
+                navigate(authUser?.role === 'admin' ? '/admin/admin-dashboard' : '/caller-dashboard');
+                break;
             case 'system':
-                navigate(authUser?.role === 'admin' ? '/admin/admin-dashboard' : '/dashboard');
+                navigate(authUser?.role === 'admin' ? '/admin/admin-dashboard' : '/caller-dashboard');
                 break;
             default:
                 break;

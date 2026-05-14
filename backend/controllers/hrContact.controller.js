@@ -18,7 +18,7 @@ export const createHRContact = async (req, res) => {
         admin.user_id,
         "New HR Contact Added",
         `${req.user.full_name} added a new HR contact for ${newContact.company_name}. Please review and approve.`,
-        "approval"
+        "hr_approval"
       );
     }
   } catch (error) {
@@ -66,7 +66,7 @@ export const updateHRContact = async (req, res) => {
           admin.user_id,
           "HR Contact Modified",
           `${req.user.full_name} modified HR contact ${contactData.full_name}. Please review and approve.`,
-          "approval"
+          "hr_approval"
         );
       }
     }

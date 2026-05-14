@@ -69,7 +69,7 @@ export const signup = async (req, res) => {
           admin.user_id,
           "New User Registration",
           `${name} (${role}) has registered and requires approval.`,
-          "approval"
+          "user_approval"
         );
       }
     }
