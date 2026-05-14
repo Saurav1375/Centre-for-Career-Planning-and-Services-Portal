@@ -83,7 +83,8 @@ export const updateHRContact = async (req, res) => {
 // Request Deletion of HR Contact
 export const requestHRDeletion = async (req, res) => {
   try {
-    const updatedContact = await HRContact.requestDeletion(req.params.id);
+    const reason = req.body.reason || '';
+    const updatedContact = await HRContact.requestDeletion(req.params.id, reason);
     if (!updatedContact) return res.status(404).json({ success: false, message: "Not Found" });
     
     // Notify all admins and moderators
@@ -92,7 +93,7 @@ export const requestHRDeletion = async (req, res) => {
       await createNotification(
         admin.user_id,
         "HR Contact Deletion Request",
-        `${req.user.full_name} requested deletion of HR contact ${updatedContact.full_name} from ${updatedContact.company_name || 'a company'}.`,
+        `${req.user.full_name} requested deletion of HR contact ${updatedContact.full_name} from ${updatedContact.company_name || 'a company'}. Reason: ${reason}`,
         "system"
       );
     }

@@ -7,6 +7,7 @@ import EditHRContactForm from '../../components/callerHRContacts/EditHRContactFo
 import HRContactDetailsPage from '../../components/callerHRContacts/HRContactDetails/HRContactDetailsPage.jsx';
 import AllContactsView from '../../components/AdminHRContacts/AllContactsView.jsx';
 import PendingApprovalView from '../../components/AdminHRContacts/PendingApprovalView.jsx';
+import DeletionRequestsView from '../../components/AdminHRContacts/DeletionRequestsView.jsx';
 import { getAllHRContacts } from '../../api/liaisoningAPIs/hrContacts.js';
 
 const AdminHRContactsRepository = () => {
@@ -81,6 +82,16 @@ const AdminHRContactsRepository = () => {
                                 {contacts.filter(c => !c.is_approved).length}
                             </span>
                         </a>
+                        <a
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); setActiveTab('deletion'); }}
+                            className={`shrink-0 border-b-2 py-3 px-1 text-sm font-semibold ${activeTab === 'deletion' ? 'border-teal-500 text-teal-600' : 'border-transparent text-slate-500 hover:border-slate-300'}`}
+                        >
+                            Deletion Requests
+                            <span className="ml-2 py-0.5 px-2 rounded-full text-xs font-bold bg-red-100 text-red-800">
+                                {contacts.filter(c => c.deletion_requested && c.assigned_to_user_id).length}
+                            </span>
+                        </a>
                     </nav>
                 </div>
 
@@ -91,6 +102,9 @@ const AdminHRContactsRepository = () => {
                     )}
                     {activeTab === "pending" && (
                         <PendingApprovalView contacts={contacts} fetchContacts={fetchContacts} setContactToEdit={setContactToEdit} />
+                    )}
+                    {activeTab === "deletion" && (
+                        <DeletionRequestsView contacts={contacts} fetchContacts={fetchContacts} />
                     )}
                 </div>
             </main>

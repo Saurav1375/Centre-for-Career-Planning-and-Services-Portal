@@ -62,6 +62,7 @@ CREATE TABLE hr_contacts (
     contact_type VARCHAR(50),
     hiring_type VARCHAR(50),
     deletion_requested BOOLEAN DEFAULT FALSE,
+    deletion_reason TEXT,
     past_engagement TEXT,
     added_by_user_id CHAR(36),
     is_approved BOOLEAN DEFAULT FALSE,

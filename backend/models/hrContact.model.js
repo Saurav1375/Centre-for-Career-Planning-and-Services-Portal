@@ -156,12 +156,12 @@ async getHRContactById(contact_id) {
 
 
 
-  async requestDeletion(contact_id) {
+  async requestDeletion(contact_id, reason = '') {
     await pool.query(
       `UPDATE hr_contacts
-       SET deletion_requested = true, updated_at = NOW()
+       SET deletion_requested = true, deletion_reason = ?, updated_at = NOW()
        WHERE contact_id = ?`,
-      [contact_id]
+      [reason, contact_id]
     );
     const [rows] = await pool.query(`SELECT * FROM hr_contacts WHERE contact_id = ?`, [contact_id]);
     return rows[0];
