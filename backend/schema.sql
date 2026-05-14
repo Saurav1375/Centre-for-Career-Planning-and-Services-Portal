@@ -60,6 +60,7 @@ CREATE TABLE hr_contacts (
     tags TEXT,
     discipline VARCHAR(100),
     contact_type VARCHAR(50),
+    hiring_type VARCHAR(50),
     deletion_requested BOOLEAN DEFAULT FALSE,
     past_engagement TEXT,
     added_by_user_id CHAR(36),

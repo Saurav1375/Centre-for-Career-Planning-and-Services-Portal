@@ -23,14 +23,15 @@ async createHRContact(contact) {
     is_approved = false,
     discipline = '',
     contact_type = '',
+    hiring_type = '',
     deletion_requested = false,
   } = contact;
 
   const query = `
       INSERT INTO hr_contacts
-        (contact_id, full_name, company_id, designation, email, phone_1, phone_2, linkedin_profile, source, status, notes, tags, past_engagement, added_by_user_id, assigned_to_user_id, is_approved, discipline, contact_type, deletion_requested)
+        (contact_id, full_name, company_id, designation, email, phone_1, phone_2, linkedin_profile, source, status, notes, tags, past_engagement, added_by_user_id, assigned_to_user_id, is_approved, discipline, contact_type, hiring_type, deletion_requested)
       VALUES
-        (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `;
 
   const values = [
@@ -52,6 +53,7 @@ async createHRContact(contact) {
     is_approved,
     discipline,
     contact_type,
+    hiring_type,
     deletion_requested,
   ];
 
@@ -117,12 +119,13 @@ async getHRContactById(contact_id) {
       is_approved,
       discipline = '',
       contact_type = '',
+      hiring_type = '',
       deletion_requested = false,
     } = contact;
 
     await pool.query(
       `UPDATE hr_contacts
-       SET full_name=?, company_id=?, designation=?, email=?, phone_1=?, phone_2=?, linkedin_profile=?, source=?, status=?, notes=?, tags=?, past_engagement=?, assigned_to_user_id=?, is_approved=?, discipline=?, contact_type=?, deletion_requested=?, updated_at=NOW()
+       SET full_name=?, company_id=?, designation=?, email=?, phone_1=?, phone_2=?, linkedin_profile=?, source=?, status=?, notes=?, tags=?, past_engagement=?, assigned_to_user_id=?, is_approved=?, discipline=?, contact_type=?, hiring_type=?, deletion_requested=?, updated_at=NOW()
        WHERE contact_id=?`,
       [
         full_name,
@@ -141,6 +144,7 @@ async getHRContactById(contact_id) {
         is_approved,
         discipline,
         contact_type,
+        hiring_type,
         deletion_requested,
         contact_id,
       ]

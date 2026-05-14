@@ -17,7 +17,8 @@ const AddHRContactForm = ({ setShowAddHRContactModal, fetchContacts }) => {
         past_engagement: '',
         company_id: '',
         discipline: '',
-        contact_type: ''
+        contact_type: '',
+        hiring_type: ''
     });
 
     const [companies, setCompanies] = useState([]);
@@ -185,6 +186,17 @@ const AddHRContactForm = ({ setShowAddHRContactModal, fetchContacts }) => {
                                     <option value="Other">Other</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="hiring_type" className="block text-sm font-medium text-slate-700">Hiring Type</label>
+                            <select name="hiring_type" id="hiring_type" value={formData.hiring_type} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md p-2">
+                                <option value="">Select Hiring Type</option>
+                                <option value="Internship (short)">Internship (short)</option>
+                                <option value="Internship (long)">Internship (long)</option>
+                                <option value="Placement">Placement</option>
+                                <option value="Both">Both</option>
+                            </select>
                         </div>
 
                         <div>

@@ -80,6 +80,7 @@ const AllContactsView = ({ contacts, setSelectedContact, fetchContacts, setConta
                             <th className="px-6 py-3">HR Contact</th>
                             <th className="px-6 py-3">Company</th>
                             <th className="px-6 py-3">Assigned To</th>
+                            <th className="px-6 py-3">Hiring Type</th>
                             <th className="px-6 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -92,6 +93,7 @@ const AllContactsView = ({ contacts, setSelectedContact, fetchContacts, setConta
                                 <td className="px-6 py-4 font-medium text-slate-900">{contact.full_name}</td>
                                 <td className="px-6 py-4">{contact.company_name}</td>
                                 <td className="px-6 py-4">{contact.assigned_to_user_name || "Unassigned"}</td>
+                                <td className="px-6 py-4">{contact.hiring_type || "-"}</td>
                                 <td className="px-6 py-4 text-right">
                                     <ContactActionsDropdown contact={contact} setSelectedContact={setSelectedContact} fetchContacts={fetchContacts} setContactToEdit={setContactToEdit} />
                                 </td>
