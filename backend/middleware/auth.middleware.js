@@ -10,7 +10,7 @@ config();
 export const protectRoute = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
-    console.log("Token: ", token);
+    // console.log("Token: ", token);
 
     if (!token) {
       return res.status(401).json({ success: false, message: "Not Authorized. Token not found" });
@@ -24,22 +24,23 @@ export const protectRoute = async (req, res, next) => {
       return res.status(401).json({ success: false, message: "Invalid or expired token" });
     }
 
-    console.log("Decoded Token: ", decoded);
+    // console.log("Decoded Token: ", decoded);
 
     if (!decoded?.userId) {
       return res.status(401).json({ success: false, message: "Not Authorized. Token invalid" });
     }
 
     // Fetch user from MariaDB
-    const query = `SELECT user_id, full_name, email, role FROM users WHERE user_id = ?`;
+    const query = `SELECT user_id, full_name, email, role, branch FROM users WHERE user_id = ?`;
     const [rows] = await pool.query(query, [decoded.userId]);
 
     if (rows.length === 0) {
       return res.status(401).json({ success: false, message: "User not found or deleted. Please login again." });
     }
 
-    req.user = rows[0];
-    req.userId = rows[0].user_id; // UUID
+    const user = rows[0];
+    req.user = user;
+    req.userId = user.user_id; // UUID
     next();
   } catch (error) {
     console.error("Error in protectRoute middleware: ", error.message);

@@ -18,7 +18,8 @@ const EditHRContactForm = ({ existingContact, setShowEditHRContactModal, fetchCo
         past_engagement: existingContact?.past_engagement || '',
         company_id: existingContact?.company_id || '',
         discipline: existingContact?.discipline || '',
-        contact_type: existingContact?.contact_type || ''
+        contact_type: existingContact?.contact_type || '',
+        hiring_type: existingContact?.hiring_type || ''
     });
 
     const [companies, setCompanies] = useState([]);
@@ -57,7 +58,7 @@ const EditHRContactForm = ({ existingContact, setShowEditHRContactModal, fetchCo
         
         // ensure is_approved is sent properly based on backend needs
         updateHRContact(existingContact.contact_id, { ...existingContact, ...formData })
-            .then(response => {
+            .then(() => {
                 fetchContacts(); 
                 setShowEditHRContactModal(false); 
             })
@@ -175,6 +176,17 @@ const EditHRContactForm = ({ existingContact, setShowEditHRContactModal, fetchCo
                                     <option value="Other">Other</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="hiring_type" className="block text-sm font-medium text-slate-700">Hiring Type</label>
+                            <select name="hiring_type" id="hiring_type" value={formData.hiring_type} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md p-2">
+                                <option value="">Select Hiring Type</option>
+                                <option value="Internship (short)">Internship (short)</option>
+                                <option value="Internship (long)">Internship (long)</option>
+                                <option value="Placement">Placement</option>
+                                <option value="Both">Both</option>
+                            </select>
                         </div>
 
                         <div>

@@ -144,7 +144,7 @@ const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
                                         htmlFor="next_follow_up_date"
                                         className="block text-sm font-semibold text-gray-700 mb-1"
                                     >
-                                        Next Follow-up Date
+                                        Next Follow-up Date <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="date"
@@ -153,6 +153,7 @@ const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
                                         value={formData.next_follow_up_date}
                                         onChange={handleChange}
                                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                                        required
                                     />
                                 </div>
                             )}
@@ -177,7 +178,7 @@ const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
                             {/* Internal Remarks Textarea */}
                             <div className="md:col-span-2">
                                 <label htmlFor="remarks" className="block text-sm font-semibold text-gray-700 mb-1">
-                                    Internal Remarks (Optional)
+                                    Internal Remarks <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
                                     id="remarks"
@@ -187,6 +188,7 @@ const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
                                     onChange={handleChange}
                                     placeholder="e.g., Very polite, may need faculty push..."
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                                    required
                                 ></textarea>
                             </div>
                         </div>

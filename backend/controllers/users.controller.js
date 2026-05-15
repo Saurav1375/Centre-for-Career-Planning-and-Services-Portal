@@ -161,7 +161,7 @@ export const sendAdminSMSToCallerController = async (req, res) => {
       caller.user_id,
       "Message from Admin",
       adminMessage,
-      "system"
+      "admin_message"
     );
 
     res.status(200).json({ message: "Admin message sent successfully" });
