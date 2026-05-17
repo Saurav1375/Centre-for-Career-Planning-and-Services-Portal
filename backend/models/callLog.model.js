@@ -60,8 +60,13 @@ const CallLog = {
     const values = [];
 
     for (const [key, value] of Object.entries(data)) {
-      fields.push(`${key}=?`);
-      values.push(value);
+      if (key === 'next_follow_up_date' && value === '') {
+        fields.push(`${key}=?`);
+        values.push(null);
+      } else {
+        fields.push(`${key}=?`);
+        values.push(value);
+      }
     }
 
     if (fields.length === 0) return null;
