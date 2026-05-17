@@ -2,6 +2,11 @@ import pool from "../config/db.js";
 import crypto from "crypto";
 
 const CallLog = {
+  // Access underlying DB connection for advanced queries
+  getDb() {
+    return pool;
+  },
+
   // Create a new log
   async createLog({ contact_id, caller_id, call_mode, call_outcome, hiring_tag, duration, conversation_summary, next_follow_up_date, remarks, admin_comments, recruitment_cycle }) {
     if (!contact_id || !caller_id || !call_mode || !call_outcome || !conversation_summary) {

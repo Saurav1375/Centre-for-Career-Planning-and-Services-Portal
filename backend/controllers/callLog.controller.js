@@ -1,4 +1,5 @@
 import CallLog from "../models/callLog.model.js";
+import { createNotification } from "../utils/notifications.js";
 
 // Create new log
 export const createCallLog = async (req, res) => {
@@ -7,6 +8,26 @@ export const createCallLog = async (req, res) => {
       ...req.body,
       caller_id: req.userId // from auth middleware
     });
+
+    if (req.body.hiring_tag === "confirmed") {
+      const [contactRows] = await CallLog.getDb().query(
+        `SELECT full_name FROM hr_contacts WHERE contact_id = ?`,
+        [req.body.contact_id]
+      );
+      const confirmedContactName = contactRows[0]?.full_name || "an HR contact";
+      const [admins] = await CallLog.getDb().query(
+        `SELECT user_id FROM users WHERE role IN ("admin", "moderator")`
+      );
+      for (const admin of admins) {
+        await createNotification(
+          admin.user_id,
+          "Confirmed HR Contact",
+          `${req.user.full_name} marked ${confirmedContactName} as confirmed. Review Confirmed HRs.`,
+          "confirmed_hr"
+        );
+      }
+    }
+
     res.json({ success: true, data: newLog });
   } catch (error) {
     console.error("Error in createCallLog:", error.message);

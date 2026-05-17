@@ -66,7 +66,12 @@ async createHRContact(contact) {
 async getAllHRContacts() {
   const query = `
     SELECT 
-      hc.*,
+      hc.*, 
+      EXISTS(
+        SELECT 1 FROM call_logs cl 
+        WHERE cl.contact_id = hc.contact_id 
+          AND cl.hiring_tag = 'confirmed'
+      ) AS is_confirmed,
       u1.full_name AS added_by_user_name,
       u2.full_name AS assigned_to_user_name,
       c.company_name

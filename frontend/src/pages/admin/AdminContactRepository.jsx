@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Users } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import AddHRContactForm from '../../components/callerHRContacts/AddHRContactForm.jsx';
 import EditHRContactForm from '../../components/callerHRContacts/EditHRContactForm.jsx';
@@ -11,7 +11,9 @@ import DeletionRequestsView from '../../components/AdminHRContacts/DeletionReque
 import { getAllHRContacts } from '../../api/liaisoningAPIs/hrContacts.js';
 
 const AdminHRContactsRepository = () => {
-    const [activeTab, setActiveTab] = useState("all");
+    const location = useLocation();
+    const initialTab = new URLSearchParams(location.search).get('tab') || 'all';
+    const [activeTab, setActiveTab] = useState(initialTab);
     const [contacts, setContacts] = useState([]);
     const [showAddHRContactModal, setShowAddHRContactModal] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
@@ -84,6 +86,16 @@ const AdminHRContactsRepository = () => {
                         </a>
                         <a
                             href="#"
+                            onClick={(e) => { e.preventDefault(); setActiveTab('confirmed'); }}
+                            className={`shrink-0 border-b-2 py-3 px-1 text-sm font-semibold ${activeTab === 'confirmed' ? 'border-teal-500 text-teal-600' : 'border-transparent text-slate-500 hover:border-slate-300'}`}
+                        >
+                            Confirmed HRs
+                            <span className="ml-2 py-0.5 px-2 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                                {contacts.filter(c => c.is_confirmed).length}
+                            </span>
+                        </a>
+                        <a
+                            href="#"
                             onClick={(e) => { e.preventDefault(); setActiveTab('deletion'); }}
                             className={`shrink-0 border-b-2 py-3 px-1 text-sm font-semibold ${activeTab === 'deletion' ? 'border-teal-500 text-teal-600' : 'border-transparent text-slate-500 hover:border-slate-300'}`}
                         >
@@ -102,6 +114,9 @@ const AdminHRContactsRepository = () => {
                     )}
                     {activeTab === "pending" && (
                         <PendingApprovalView contacts={contacts} fetchContacts={fetchContacts} setContactToEdit={setContactToEdit} />
+                    )}
+                    {activeTab === "confirmed" && (
+                        <AllContactsView contacts={contacts.filter(c => c.is_confirmed)} setSelectedContact={setSelectedContact} fetchContacts={fetchContacts} setContactToEdit={setContactToEdit} />
                     )}
                     {activeTab === "deletion" && (
                         <DeletionRequestsView contacts={contacts} fetchContacts={fetchContacts} />
