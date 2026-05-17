@@ -7,19 +7,22 @@ import pool from '../config/db.js';
 export const createHRContact = async (req, res) => {
   try {
     const added_by_user_id = req.user.user_id; // Logged-in user
-    const contact = { ...req.body, added_by_user_id };
+    const isAdmin = req.user.role?.toLowerCase() === 'admin';
+    const contact = { ...req.body, added_by_user_id, is_approved: isAdmin };
     const newContact = await HRContact.createHRContact(contact);
     res.status(201).json({ success: true, data: newContact });
-    
-    // Notify all admins
-    const [admins] = await pool.query('SELECT user_id FROM users WHERE role = "Admin"');
-    for (const admin of admins) {
-      await createNotification(
-        admin.user_id,
-        "New HR Contact Added",
-        `${req.user.full_name} added a new HR contact for ${newContact.company_name}. Please review and approve.`,
-        "hr_approval"
-      );
+
+    if (!isAdmin) {
+      // Notify all admins only when a non-admin user adds a contact
+      const [admins] = await pool.query('SELECT user_id FROM users WHERE role = "Admin"');
+      for (const admin of admins) {
+        await createNotification(
+          admin.user_id,
+          "New HR Contact Added",
+          `${req.user.full_name} added a new HR contact for ${newContact.company_name}. Please review and approve.`,
+          "hr_approval"
+        );
+      }
     }
   } catch (error) {
     console.error(error.message);
