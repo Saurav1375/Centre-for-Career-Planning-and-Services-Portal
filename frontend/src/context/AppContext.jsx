@@ -8,11 +8,12 @@ export const useAppContext = () => {
 
 export const AppContextProvider = ({ children }) => {
 
-    const url = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-    const [backendUrl] = useState(url);
+    const initialUrl = import.meta.env.VITE_BACKEND_URL || "";
+    const backendUrl = initialUrl === "/api" ? "" : initialUrl;
+    const [backendUrlState] = useState(backendUrl);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [showVerifyEmail, setShowVerifyEmail] = useState(false);
     const [showAddThread, setShowAddThread] = useState(false);
 
-    return <AppContext.Provider value={{ backendUrl, showForgotPassword, setShowForgotPassword, showVerifyEmail, setShowVerifyEmail, showAddThread, setShowAddThread }}>{children}</AppContext.Provider>;
+    return <AppContext.Provider value={{ backendUrl: backendUrlState, showForgotPassword, setShowForgotPassword, showVerifyEmail, setShowVerifyEmail, showAddThread, setShowAddThread }}>{children}</AppContext.Provider>;
 };

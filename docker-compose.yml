@@ -1,13 +1,49 @@
-version: '3.8'
-
 services:
-  mariadb:
+  db:
     image: mariadb:10.11
-    container_name: ccps_mariadb
+    restart: unless-stopped
     environment:
       MARIADB_ROOT_PASSWORD: mariadb_pw
       MARIADB_DATABASE: ccps
+      MARIADB_USER: ccps_user
+      MARIADB_PASSWORD: ccps_pw
     ports:
       - "3306:3306"
     volumes:
-      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - db_data:/var/lib/mysql
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db
+      DB_USER: ccps_user
+      DB_PASSWORD: ccps_pw
+      DB_NAME: ccps
+      DB_PORT: 3306
+      JWT_SECRET: change_this_secret
+      FRONTEND_URL: http://localhost
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_URL: /api
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  db_data:
