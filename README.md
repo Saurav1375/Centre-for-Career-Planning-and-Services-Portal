@@ -213,8 +213,46 @@ Centre-for-Career-Planning-and-Services-Portal/
    - Navigate to `http://localhost:5173` to view the frontend application.
    - The backend server should be running on `http://localhost:5000` (or the port specified in your `.env` file).
 
+---
 
-   
+## Deployment
+[↥ Back to top](#table-of-contents)
+
+This project is now configured for Docker-based production deployment with an Nginx reverse proxy.
+
+### What we set up
+- **MariaDB** container for the relational database.
+- **Backend** container for the Node.js/Express API.
+- **Frontend** container built by Vite and served via Nginx.
+- **Nginx** proxy routes all `/api/*` requests to the backend service.
+- **Environment variables** are passed through Docker Compose for database and app configuration.
+
+### How it works
+1. `frontend` serves the built React app on port `80`.
+2. Requests to `/api/*` are proxied by Nginx to `backend:3000`.
+3. `backend` connects to the `db` container using the Docker service name `db`.
+4. The `db` container initializes the schema from `backend/schema.sql` on first startup.
+
+### Deploying with Docker Compose
+From the project root:
+
+```bash
+docker compose up --build -d
+```
+
+This command will:
+- build the backend production image
+- build the frontend static site image
+- start MariaDB, backend, and frontend containers
+
+### Verify deployment
+- Frontend: `http://localhost`
+- Backend API health: `http://localhost/api/health`
+
+### Notes
+- In Docker production, frontend uses `VITE_BACKEND_URL=/api` so client requests stay same-origin.
+- Set `JWT_SECRET` and DB credentials in the `backend` service environment or in a `.env` file before production use.
+
 ---
 
 ## Maintainers
@@ -222,7 +260,7 @@ Centre-for-Career-Planning-and-Services-Portal/
 
 This project is maintained by:
 
-- [Umap Utkarsh Sharac](https://github.com/UtkarshUmap)
+- [Umap Utkarsh Sharad](https://github.com/UtkarshUmap)
 - [Neil Chitale](https://github.com/Neil-ctrl)
 
 ---

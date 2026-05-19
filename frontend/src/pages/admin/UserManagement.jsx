@@ -28,11 +28,12 @@ const UserManagementPage = () => {
             const stats = statsResponse.data;
 
             const statsMap = {};
-            stats.forEach(stat => { statsMap[stat.caller_id] = stat.total_contacts_assigned; });
+            stats.forEach(stat => { statsMap[stat.caller_id] = stat; });
 
             const usersWithStats = users.map(user => ({
                 ...user,
-                contactsAssigned: statsMap[user.user_id] || 0,
+                contactsAssigned: statsMap[user.user_id]?.total_contacts_assigned || 0,
+                callsMade: statsMap[user.user_id]?.total_call_logs || 0,
             }));
 
             setApprovedUsers(usersWithStats.filter(user => user.is_approved));

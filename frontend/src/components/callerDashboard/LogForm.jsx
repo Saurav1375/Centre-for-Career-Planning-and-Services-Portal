@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createCallLog } from "../../api/liaisoningAPIs/callLogs";
+import { createCallLog, updateCallLog } from "../../api/liaisoningAPIs/callLogs";
 
 const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
     // A single state object to hold all form data
@@ -26,18 +26,22 @@ const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
 
     // Handle the form submission
     const handleSubmit = async (e) => {
-  e.preventDefault();
-  console.log("Submitting:", formData);
+        e.preventDefault();
+        console.log("Submitting:", formData);
 
-  try {
-    await createCallLog(formData);
-    onSubmit();
-    setLogForm(false);
-  } catch (error) {
-    console.error("Failed to create call log:", error);
-    alert(error.response?.data?.message || "Something went wrong, please try again.");
-  }
-};
+        try {
+            if (hr.log_id) {
+                await updateCallLog(hr.log_id, formData);
+            } else {
+                await createCallLog(formData);
+            }
+            onSubmit();
+            setLogForm(false);
+        } catch (error) {
+            console.error("Failed to create call log:", error);
+            alert(error.response?.data?.message || "Something went wrong, please try again.");
+        }
+    };
 
 
     return (
@@ -51,7 +55,7 @@ const LogCallForm = ({ hr, setLogForm, onSubmit }) => {
                                 Log Call for {hr.full_name}
                             </h2>
                             <p className="text-sm text-gray-500 mt-1">
-                                Fill in the details of your interaction with {hr.company}.
+                                Fill in the details of your interaction with {hr.company_name || hr.company || 'the HR contact'}.
                             </p>
                         </div>
                         <button

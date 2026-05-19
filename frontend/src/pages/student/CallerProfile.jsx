@@ -214,8 +214,9 @@ const CallerProfile = () => {
                             {topCallers.length === 0 ? (
                                 <p className="text-sm text-slate-400 text-center py-4">No leaderboard data yet.</p>
                             ) : (
-                                <ul className="space-y-2">
-                                    {topCallers.slice(0, 5).map((caller, idx) => {
+                                <div className="max-h-64 overflow-y-auto pr-2">
+                                    <ul className="space-y-2">
+                                        {topCallers.slice(0, 10).map((caller, idx) => {
                                         const medals = ['🥇', '🥈', '🥉'];
                                         const isMe = caller.name === profile.full_name;
                                         return (
@@ -234,8 +235,9 @@ const CallerProfile = () => {
                                         );
                                     })}
                                 </ul>
-                            )}
-                        </div>
+                            </div>
+                        )}
+                    </div>
                     </div>
                 </div>
             </main>

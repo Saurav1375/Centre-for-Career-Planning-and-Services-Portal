@@ -2,8 +2,14 @@
 import axios from "axios";
 
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
+const normalizedBackendUrl = backendUrl.replace(/\/$/, "");
+const baseURL = normalizedBackendUrl
+  ? (normalizedBackendUrl.endsWith("/api") ? normalizedBackendUrl : `${normalizedBackendUrl}/api`)
+  : "/api";
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL ? `${import.meta.env.VITE_BACKEND_URL}/api` : "http://localhost:3000/api", // your backend base URL
+  baseURL,
   withCredentials: true,
 });
 

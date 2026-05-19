@@ -11,8 +11,9 @@ const TopCallersList = ({ callers }) => (
         {callers.length === 0 ? (
             <p className="text-sm text-slate-400 text-center py-4">No call activity yet this week.</p>
         ) : (
-            <ul className="space-y-3">
-                {callers.map((caller, index) => {
+            <div className="max-h-64 overflow-y-auto pr-2">
+                <ul className="space-y-3">
+                    {callers.slice(0, 10).map((caller, index) => {
                     const barWidth = callers[0].calls > 0 ? Math.max((caller.calls / callers[0].calls) * 100, 8) : 8;
                     return (
                         <li key={caller.id} className="group">
@@ -36,8 +37,9 @@ const TopCallersList = ({ callers }) => (
                             </div>
                         </li>
                     );
-                })}
-            </ul>
+                    })}
+                </ul>
+            </div>
         )}
     </div>
 );

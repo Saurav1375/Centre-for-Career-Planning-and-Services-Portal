@@ -50,10 +50,20 @@ const CallerDashboard = () => {
 
   const { stats, recent_call_logs, upcoming_follow_ups, assigned_hr_contacts, todays_follow_ups, top_callers } = dashboardData;
 
+  const openLogForToday = (log) => {
+    setSelectedHR({
+      log_id: log.log_id,
+      contact_id: log.contact_id,
+      full_name: log.contact_name,
+      company_name: log.company_name,
+    });
+    setShowHROptionForLogForm(false);
+    setShowLogForm(true);
+  };
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
-
       <main className="flex-1 p-6 md:p-8 space-y-6 overflow-y-auto">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-start gap-4">
@@ -109,7 +119,11 @@ const CallerDashboard = () => {
               {todays_follow_ups && todays_follow_ups.length > 0 ? (
                 <ul className="space-y-3">
                   {todays_follow_ups.map((log) => (
-                    <li key={log.log_id} className="flex items-start gap-3 p-3 rounded-xl bg-amber-50 border border-amber-100">
+                    <li
+                      key={log.log_id}
+                      className="flex items-start gap-3 p-3 rounded-xl bg-amber-50 border border-amber-100 hover:bg-amber-100 cursor-pointer"
+                      onClick={() => openLogForToday(log)}
+                    >
                       <PhoneCall className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-slate-800 truncate">{log.contact_name}</p>

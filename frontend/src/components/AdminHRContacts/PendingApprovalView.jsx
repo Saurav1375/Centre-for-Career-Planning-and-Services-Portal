@@ -74,6 +74,7 @@ const PendingApprovalView = ({ contacts, fetchContacts, setContactToEdit }) => {
                             <th className="p-4"><input type="checkbox" onChange={handleSelectAll} className="rounded" /></th>
                             <th className="px-6 py-3">HR Contact</th>
                             <th className="px-6 py-3">Company</th>
+                            <th className="px-6 py-3">Hiring Type</th>
                             <th className="px-6 py-3">Added By</th>
                             <th className="px-6 py-3 text-right">Actions</th>
                         </tr>
@@ -86,6 +87,7 @@ const PendingApprovalView = ({ contacts, fetchContacts, setContactToEdit }) => {
                                 </td>
                                 <td className="px-6 py-4 font-medium">{contact.full_name}</td>
                                 <td className="px-6 py-4">{contact.company_name}</td>
+                                <td className="px-6 py-4">{contact.hiring_type || "-"}</td>
                                 <td className="px-6 py-4">{contact.added_by_user_name}</td>
                                 <td className="px-6 py-4 text-right space-x-2">
                                     <button onClick={() => approveContact(contact.contact_id)} className="px-3 py-1 text-xs font-medium bg-green-600 rounded-md hover:bg-green-700 text-white">Approve</button>

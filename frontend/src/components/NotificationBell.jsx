@@ -83,8 +83,9 @@ const NotificationBell = () => {
                 break;
             case 'follow_up':
                 navigate('/caller-call-logs');
-                break;
-            case 'admin_message':
+                break;            case 'confirmed_hr':
+                navigate('/admin/hr-contacts-repository?tab=confirmed');
+                break;            case 'admin_message':
                 navigate(authUser?.role === 'admin' ? '/admin/admin-dashboard' : '/caller-dashboard');
                 break;
             case 'system':
